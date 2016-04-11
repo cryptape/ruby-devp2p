@@ -1,0 +1,23 @@
+PATH
+  remote: .
+  specs:
+    devp2p (0.0.1)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    minitest (5.8.3)
+    rake (10.5.0)
+    yard (0.8.7.6)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  devp2p!
+  minitest (= 5.8.3)
+  rake (~> 10.5)
+  yard (= 0.8.7.6)
+
+BUNDLED WITH
+   1.11.2
