@@ -3,6 +3,7 @@ PATH
   specs:
     devp2p (0.0.1)
       block_logger (~> 0.1)
+      celluloid (~> 0.17)
       hashie (~> 3.4)
 
 GEM
@@ -10,8 +11,26 @@ GEM
   specs:
     block_logger (0.1.0)
       logging (~> 2.0)
+    celluloid (0.17.2)
+      celluloid-essentials
+      celluloid-extras
+      celluloid-fsm
+      celluloid-pool
+      celluloid-supervision
+      timers (>= 4.1.1)
+    celluloid-essentials (0.20.5)
+      timers (>= 4.1.1)
+    celluloid-extras (0.20.5)
+      timers (>= 4.1.1)
+    celluloid-fsm (0.20.5)
+      timers (>= 4.1.1)
+    celluloid-pool (0.20.5)
+      timers (>= 4.1.1)
+    celluloid-supervision (0.20.5)
+      timers (>= 4.1.1)
     coderay (1.1.0)
     hashie (3.4.3)
+    hitimes (1.2.3)
     little-plugger (1.1.4)
     logging (2.1.0)
       little-plugger (~> 1.1)
@@ -25,6 +44,8 @@ GEM
       slop (~> 3.4)
     rake (10.5.0)
     slop (3.6.0)
+    timers (4.1.1)
+      hitimes
     yard (0.8.7.6)
 
 PLATFORMS

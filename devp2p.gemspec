@@ -18,6 +18,7 @@ Gem::Specification.new do |s|
 
   s.add_dependency('hashie', ['~> 3.4'])
   s.add_dependency('block_logger', ['~> 0.1'])
+  s.add_dependency('celluloid', ['~> 0.17'])
 
   s.add_development_dependency('rake', ['~> 10.5'])
   s.add_development_dependency('minitest', '5.8.3')

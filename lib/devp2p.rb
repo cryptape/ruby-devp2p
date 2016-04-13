@@ -9,5 +9,7 @@ end
 require 'devp2p/version'
 
 require 'devp2p/base_service'
+require 'devp2p/wired_service'
+
 require 'devp2p/base_app'
 
