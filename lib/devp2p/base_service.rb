@@ -43,7 +43,7 @@ module DEVp2p
 
       available_services = app.services.each_value.map(&:class)
       self.class.required_services.each do |r|
-        raise ArgumentError, "require service #{r}" unless available_services.include?(r)
+        raise MissingRequiredServiceError, "require service #{r}" unless available_services.include?(r)
       end
     end
 
