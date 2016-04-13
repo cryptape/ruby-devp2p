@@ -47,6 +47,10 @@ module DEVp2p
       end
     end
 
+    def run
+      # pass
+    end
+
     def start
       @stopped = false
     end

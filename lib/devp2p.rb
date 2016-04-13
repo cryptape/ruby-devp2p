@@ -10,6 +10,7 @@ end
 require 'devp2p/version'
 require 'devp2p/configurable'
 
+require 'devp2p/command'
 require 'devp2p/base_protocol'
 
 require 'devp2p/base_service'
