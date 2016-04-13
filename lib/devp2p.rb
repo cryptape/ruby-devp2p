@@ -8,7 +8,11 @@ module DEVp2p
 end
 
 require 'devp2p/version'
+
 require 'devp2p/configurable'
+require 'devp2p/utils'
+
+require 'devp2p/packet'
 
 require 'devp2p/command'
 require 'devp2p/base_protocol'
