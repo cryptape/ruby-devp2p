@@ -36,7 +36,7 @@ module DEVp2p
       header_sedes: RLP::Sedes::List.new(elements: [RLP::Sedes.big_endian_int]*3, strict: false)
     )
 
-    attr :protocol_id, :cmd_id, :sequence_id, :payload, :is_chunked_n, :total_payload_size
+    attr :protocol_id, :cmd_id, :sequence_id, :payload, :is_chunked_n, :total_payload_size, :frames
 
     def initialize(protocol_id, cmd_id, payload, sequence_id, window_size, is_chunked_n=false, frames=nil, frame_cipher=nil)
       raise ArgumentError, 'invalid protocol_id' unless protocol_id < TT16
@@ -44,6 +44,7 @@ module DEVp2p
       raise ArgumentError, 'invalid window_size' unless window_size % self.class.padding == 0
       raise ArgumentError, 'invalid cmd_id' unless cmd_id < 256
 
+      @protocol_id = protocol_id
       @cmd_id = cmd_id
       @payload = payload
       @sequence_id = sequence_id
@@ -125,8 +126,8 @@ module DEVp2p
         l.push sequence_id
       end
 
-      header_data = RLP.encode l, sedes: self.class.header_data_sedes
-      raise FrameError, 'invalid rlp' unless l == RLP.decode(header_data, sedes: self.class.header_data_sedes, strict: false)
+      header_data = RLP.encode l, sedes: self.class.header_sedes
+      raise FrameError, 'invalid rlp' unless l == RLP.decode(header_data, sedes: self.class.header_sedes, strict: false)
 
       bs = body_size
       raise FrameError, 'invalid body size' unless bs < 256**3
@@ -151,10 +152,6 @@ module DEVp2p
     #
     def body
       Utils.rzpad16 "#{enc_cmd_id}#{payload}"
-    end
-
-    def get_frames
-      @frames
     end
 
     def as_bytes

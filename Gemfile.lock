@@ -5,13 +5,14 @@ PATH
       block_logger (~> 0.1)
       celluloid (~> 0.17)
       hashie (~> 3.4)
+      rlp (>= 0.7.1)
 
 GEM
   remote: https://rubygems.org/
   specs:
     block_logger (0.1.0)
       logging (~> 2.0)
-    celluloid (0.17.2)
+    celluloid (0.17.3)
       celluloid-essentials
       celluloid-extras
       celluloid-fsm
@@ -43,6 +44,7 @@ GEM
       method_source (~> 0.8.1)
       slop (~> 3.4)
     rake (10.5.0)
+    rlp (0.7.1)
     slop (3.6.0)
     timers (4.1.1)
       hitimes

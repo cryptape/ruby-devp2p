@@ -35,6 +35,8 @@ module DEVp2p
       frame_cipher: nil,
     )
 
+    attr :decode_buffer
+
     def initialize(frame_cipher=nil)
       @frame_cipher = frame_cipher || self.class.frame_cipher
       @last_protocol = nil
@@ -106,7 +108,7 @@ module DEVp2p
       frames = Frame.new(
         packet.protocol_id, packet.cmd_id, packet.payload, sid,
         protocol_window_size(packet.protocol_id),
-        @frame_cipher
+        false, nil, @frame_cipher
       ).frames
 
       queues = @queues[packet.protocol_id]
@@ -250,7 +252,7 @@ module DEVp2p
       # chunked-0: RLP::List.new(protocol_type, sequence_id, total_packet_size)
       header_data = nil
       begin
-        header_data = RLP.decode(header[3..-1], sedes: header_data_sedes, strict: false)
+        header_data = RLP.decode(header[3..-1], sedes: Frame.header_sedes, strict: false)
       rescue RLP::Error::RLPException => e
         logger.error(e)
         raise MultiplexerError('invalid rlp data')

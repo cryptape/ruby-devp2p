@@ -1,7 +1,7 @@
 # -*- encoding : ascii-8bit -*-
 require 'test_helper'
 
-class QueueTest < Minitest::Test
+class SyncQueueTest < Minitest::Test
 
   def test_peek
     q = SyncQueue.new
