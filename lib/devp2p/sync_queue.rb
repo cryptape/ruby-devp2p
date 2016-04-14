@@ -2,6 +2,10 @@
 
 require 'thread'
 
+##
+# This is the synchronized queue implementation of ruby 2.0.0 with some
+# extentions like #peek.
+#
 class SyncQueue
   #
   # Creates a new queue.

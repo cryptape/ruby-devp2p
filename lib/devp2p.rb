@@ -16,6 +16,7 @@ require 'devp2p/utils'
 require 'devp2p/sync_queue'
 
 require 'devp2p/packet'
+require 'devp2p/multiplexer'
 
 require 'devp2p/command'
 require 'devp2p/base_protocol'
