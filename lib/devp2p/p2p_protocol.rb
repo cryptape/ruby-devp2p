@@ -98,7 +98,9 @@ module DEVp2p
         logger.debug "send_disconnect", peer: proto.peer, reason: reason_name(reason)
 
         proto.peer.report_error "sending disconnect #{reason_name(reason)}"
-        # TODO: gevent.spawn_later(0.5, proto.peer.stop)
+
+        after(0.5) { proto.peer.stop }
+
         {reason: reason}
       end
 
