@@ -16,6 +16,12 @@ module DEVp2p
       x % 16 == 0 ? x : (x + 16 - (x%16))
     end
 
+    def rzpad16(data)
+      extra = data.size % 16
+      data += "\x00" * (16 - extra) if extra != 0
+      data
+    end
+
     def update_config_with_defaults(config, default_config)
       default_config.each do |k, v|
         if v.is_a?(Hash)

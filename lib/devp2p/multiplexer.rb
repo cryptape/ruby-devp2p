@@ -101,7 +101,7 @@ module DEVp2p
 
     def add_packet(packet)
       sid = @sequence_id[packet.protocol_id]
-      @sequence_id[packet.protocol_id] = (sid + 1) % 2**16
+      @sequence_id[packet.protocol_id] = (sid + 1) % TT16
 
       frames = Frame.new(
         packet.protocol_id, packet.cmd_id, packet.payload, sid,
@@ -266,11 +266,11 @@ module DEVp2p
       end
 
       protocol_id = header_data[0]
-      raise MultiplexerError, "invalid protocol id" unless protocol_id < 2**16
+      raise MultiplexerError, "invalid protocol id" unless protocol_id < TT16
 
       if header_data.size > 1
         sequence_id = header_data[1]
-        raise MultiplexerError, "invalid sequence id" unless sequence_id < 2**16
+        raise MultiplexerError, "invalid sequence id" unless sequence_id < TT16
       else
         sequence_id = nil
       end
