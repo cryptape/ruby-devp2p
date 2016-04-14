@@ -3,6 +3,8 @@
 require 'block_logger'
 require 'celluloid'
 
+require 'rlp'
+
 module DEVp2p
   Logger = BlockLogger
 end
@@ -11,6 +13,7 @@ require 'devp2p/version'
 
 require 'devp2p/configurable'
 require 'devp2p/utils'
+require 'devp2p/sync_queue'
 
 require 'devp2p/packet'
 
