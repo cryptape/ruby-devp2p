@@ -255,7 +255,7 @@ module DEVp2p
         header_data = RLP.decode(header[3..-1], sedes: Frame.header_sedes, strict: false)
       rescue RLP::Error::RLPException => e
         logger.error(e)
-        raise MultiplexerError('invalid rlp data')
+        raise MultiplexerError, 'invalid rlp data'
       end
 
       if header_data.size == 3

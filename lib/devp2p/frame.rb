@@ -178,7 +178,7 @@ module DEVp2p
     end
 
     def to_s
-      "<Frame(#{frame_type}, len=#{frame_size}, sid=#{sequence_id})"
+      "<Frame(#{frame_type}, len=#{frame_size}, protocol=#{protocol_id} sid=#{sequence_id})"
     end
     alias :inspect :to_s
 
