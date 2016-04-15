@@ -53,18 +53,39 @@ class P2PProtocolTest < Minitest::Test
     end
   end
 
-  def test_eip8_hello
+  def setup
     Celluloid.shutdown rescue nil
     Celluloid.boot
 
+    @peer = PeerMock.new
+    @proto = P2PProtocol.new @peer, WiredService.new(BaseApp.new)
+  end
+
+  def test_eip8_hello
     eip8_hello = Utils.decode_hex 'f87137916b6e6574682f76302e39312f706c616e39cdc5836574683dc6846d6f726b1682270fb840fda1cff674c90c9a197539fe3dfb53086ace64f83ed7c6eabec741f7f381cc803e52ab2cd55d5569bce4347107a310dfd5f88a010cd2ffd1005ca406f1842877c883666f6f836261720304'
 
-    peer = PeerMock.new
-    proto = P2PProtocol.new peer, WiredService.new(BaseApp.new)
     test_packet = Packet.new 0, 1, eip8_hello
+    @proto.receive_hello test_packet
+    assert_equal true, @peer.hello_received
+  end
 
-    proto.receive_hello test_packet
-    assert_equal true, peer.hello_received
+  def test_callback
+    r = []
+
+    cb = lambda do |proto, **data|
+      #assert_equal @proto, proto
+      r.push data
+    end
+    @proto.receive_pong_callbacks.push cb
+
+    @proto.send_ping
+    ping_packet = @peer.packets.pop
+    @proto.receive_ping ping_packet
+    pong_packet = @peer.packets.pop
+    @proto.receive_pong pong_packet
+    assert @peer.packets.empty?
+    assert_equal 1, r.size
+    assert_equal({}, r[0])
   end
 
 end
