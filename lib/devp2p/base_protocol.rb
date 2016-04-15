@@ -36,7 +36,7 @@ module DEVp2p
 
     def initialize(peer, service)
       raise ArgumentError, 'service must be WiredService' unless service.instance_of?(WiredService)
-      raise ArgumentError, 'peer.send_packet must be callable' unless peer.send_packet.respond_to?(:call)
+      raise ArgumentError, 'peer.send_packet must be callable' unless peer.respond_to?(:send_packet)
 
       @peer = peer
       @service = service
@@ -115,10 +115,11 @@ module DEVp2p
           send_packet packet
         end
 
-        singleton_class.send(:define_method, "receive_#{klass.name}", &receive)
-        singleton_class.send(:define_method, "create_#{klass.name}", &create)
-        singleton_class.send(:define_method, "send_#{klass.name}", &send_packet)
-        singleton_class.send(:define_method, "receive_#{klass.name}_callbacks") do
+        name = klass.name.split('::').last.downcase
+        singleton_class.send(:define_method, "receive_#{name}", &receive)
+        singleton_class.send(:define_method, "create_#{name}", &create)
+        singleton_class.send(:define_method, "send_#{name}", &send_packet)
+        singleton_class.send(:define_method, "receive_#{name}_callbacks") do
           instance.receive_callbacks
         end
       end

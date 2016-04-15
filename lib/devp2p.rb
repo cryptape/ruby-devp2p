@@ -24,6 +24,7 @@ require 'devp2p/multiplexer'
 
 require 'devp2p/command'
 require 'devp2p/base_protocol'
+require 'devp2p/connection_monitor'
 require 'devp2p/p2p_protocol'
 
 require 'devp2p/base_service'

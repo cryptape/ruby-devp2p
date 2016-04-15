@@ -9,11 +9,6 @@ module DEVp2p
   #
   class P2PProtocol < BaseProtocol
 
-    name 'p2p'
-    protocol_id 0
-    version 4
-    max_cmd_id 15
-
     class Ping < Command
       cmd_id 2
 
@@ -51,15 +46,22 @@ module DEVp2p
       def receive(proto, data)
         logger.debug 'receive_hello', peer: proto.peer, version: data['version']
 
-        reasons = proto::Disconnect::Reason
+        reasons = proto.class::Disconnect::Reason
         if data['remote_pubkey'] == proto.config['node']['id']
           logger.debug 'connected myself'
           return proto.send_disconnect(reason: reasons[:connected_to_self])
         end
 
-        proto.peer.receive_hello proto, **data
+        proto.peer.receive_hello proto, data
         super(proto, data)
       end
+
+      private
+
+      def logger
+        @logger = Logger.new 'p2p.protocol'
+      end
+
     end
 
     class Disconnect < Command
@@ -126,6 +128,14 @@ module DEVp2p
         Packet.new protocol_id, Hello.cmd_id, payload
       end
     end
+
+    name 'p2p'
+    protocol_id 0
+    version 4
+    max_cmd_id 15
+    commands [Ping, Pong, Hello, Disconnect]
+
+    attr :config
 
     def initialize(peer, service)
       raise ArgumentError, "invalid peer" unless peer.respond_to?(:capabilities)
