@@ -2,7 +2,7 @@
 
 module DEVp2p
 
-##
+  ##
   # When sending a packet over RLPx, the packet will be framed. The frame
   # provides information about the size of the packet and the packet's source
   # protocol. There are three slightly different frames, depending on whether
@@ -181,7 +181,6 @@ module DEVp2p
       "<Frame(#{frame_type}, len=#{frame_size}, protocol=#{protocol_id} sid=#{sequence_id})"
     end
     alias :inspect :to_s
-
 
   end
 
