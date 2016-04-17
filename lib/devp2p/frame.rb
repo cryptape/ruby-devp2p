@@ -36,6 +36,16 @@ module DEVp2p
       header_sedes: RLP::Sedes::List.new(elements: [RLP::Sedes.big_endian_int]*3, strict: false)
     )
 
+    class <<self
+      def encode_body_size(size)
+        [size].pack('I>')[1..-1]
+      end
+
+      def decode_body_size(header)
+        "\x00#{header[0,3]}".unpack('I>').first
+      end
+    end
+
     attr :protocol_id, :cmd_id, :sequence_id, :payload, :is_chunked_n, :total_payload_size, :frames
 
     def initialize(protocol_id, cmd_id, payload, sequence_id, window_size, is_chunked_n=false, frames=nil, frame_cipher=nil)
@@ -132,7 +142,7 @@ module DEVp2p
       bs = body_size
       raise FrameError, 'invalid body size' unless bs < 256**3
 
-      header = [body_size].pack('I>')[1..-1] + header_data
+      header = Frame.encode_body_size(body_size) + header_data
       header = Utils.rzpad16 header
       raise FrameError, 'invalid header' unless header.size == self.class.header_size
 

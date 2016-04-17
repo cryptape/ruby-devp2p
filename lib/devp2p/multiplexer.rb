@@ -64,7 +64,6 @@ module DEVp2p
       !@queues[id].values.all?(&:empty?)
     end
 
-##
     # pws = protocol_window_size = window_size / active_protocol_count
     def protocol_window_size(id=nil)
       if id && !active_protocol?(id)
@@ -231,7 +230,7 @@ module DEVp2p
       return [nil, buffer] if buffer.size < Frame.header_size
 
       header ||= decode_header buffer[0, Frame.header_size + Frame.mac_size]
-      body_size = "\x00#{header[0,3]}".unpack('I>').first
+      body_size = Frame.decode_body_size header
 
       if @frame_cipher
         body = @frame_cipher.decrypt_body(buffer[(Frame.header_size+Frame.mac_size)..-1], body_size)
@@ -334,7 +333,7 @@ module DEVp2p
         end
       end
 
-      body_size = "\x00#{@cached_decode_header[0,3]}".unpack('I>').first
+      body_size = Frame.decode_body_size @cached_decode_header
       required_len = Frame.header_size + Frame.mac_size + Utils.ceil16(body_size) + Frame.mac_size
 
       if @decode_buffer.size >= required_len
