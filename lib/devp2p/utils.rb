@@ -15,6 +15,14 @@ module DEVp2p
       RLP::Utils.decode_hex s
     end
 
+    def int_to_big_endian(i)
+      RLP::Sedes.big_endian_int.serialize(i)
+    end
+
+    def big_endian_to_int(s)
+      RLP::Sedes.big_endian_int.deserialize s.sub(/\A(\x00)+/, '')
+    end
+
     def ceil16(x)
       x % 16 == 0 ? x : (x + 16 - (x%16))
     end

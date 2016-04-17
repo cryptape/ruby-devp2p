@@ -9,6 +9,7 @@ module DEVp2p
   Logger = BlockLogger
 
   TT16 = 2**16
+  TT256 = 2**256
 end
 
 require 'devp2p/version'
@@ -16,11 +17,14 @@ require 'devp2p/version'
 require 'devp2p/configurable'
 require 'devp2p/utils'
 require 'devp2p/exception'
+
 require 'devp2p/sync_queue'
 
 require 'devp2p/packet'
 require 'devp2p/frame'
 require 'devp2p/multiplexer'
+
+require 'devp2p/rlpx_session'
 
 require 'devp2p/command'
 require 'devp2p/base_protocol'
