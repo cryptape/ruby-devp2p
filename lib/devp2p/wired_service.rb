@@ -13,6 +13,7 @@ module DEVp2p
   #       WiredService.wire_protocol(Peer.new, WiredService.new)
   #
   class WiredService < BaseService
+    name 'wired'
 
     attr_accessor :wire_protocol
 

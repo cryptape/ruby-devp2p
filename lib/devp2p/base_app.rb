@@ -23,7 +23,7 @@ module DEVp2p
     #
     def register_service(service)
       raise ArgumentError, "service must be instance of BaseService" unless service.is_a?(BaseService)
-      raise ArgumentError, "service already registered" if services.has_key?(service.name)
+      raise ArgumentError, "service #{service.name} already registered" if services.has_key?(service.name)
 
       logger.info "registering service", service: service.name
 

@@ -13,15 +13,14 @@ module DEVp2p
   class BaseService
     include Celluloid
 
-    DefaultConfig = {
-      name: {}
-    }
+    extend Configurable
+    add_config(
+      name: '',
+      default_config: {name: {}},
+      required_services: []
+    )
 
     class <<self
-      def required_services
-        @required_services ||= []
-      end
-
       ##
       # Services know best how to initiate themselves. Create a service
       # instance, probably based on `app.config` and `app.services`.
@@ -33,12 +32,13 @@ module DEVp2p
       end
     end
 
-    attr :app
+    attr :app, :name
 
     def initialize(app)
       @app = app
 
-      @config = Utils.update_config_with_defaults app.config, DefaultConfig
+      @name = self.class.name
+      @config = Utils.update_config_with_defaults app.config, self.class.default_config
       @stopped = false
 
       available_services = app.services.each_value.map(&:class)
@@ -48,11 +48,12 @@ module DEVp2p
     end
 
     def run
-      # pass
+      raise NotImplemented, 'override to provide service loop'
     end
 
     def start
       @stopped = false
+      async.run
     end
 
     def stop
@@ -60,5 +61,8 @@ module DEVp2p
       terminate
     end
 
+    def stopped?
+      @stopped
+    end
   end
 end
