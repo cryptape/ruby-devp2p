@@ -57,17 +57,19 @@ class MultiplexerTest < Minitest::Test
   end
 
   def test_chunked_big
+    logger = Logging.logger.root
+
     payload = "\x00" * 10 * 1024**2 # 10MB
     packet1 = Packet.new @protos[0], 0, payload
-    puts "large payload size: #{payload.size}"
+    logger.info "large payload size: #{payload.size}"
 
     t = Time.now
     @mux.add_packet packet1
-    puts "framing: #{Time.now - t}"
+    logger.info "framing: #{Time.now - t}"
 
     t = Time.now
     messages = @mux.pop_all_frames.map(&:as_bytes)
-    puts "popping frames: #{Time.now - t}"
+    logger.info "popping frames: #{Time.now - t}"
 
     t = Time.now
     packets = nil
@@ -75,7 +77,7 @@ class MultiplexerTest < Minitest::Test
       packets = @mux.decode m
       break unless packets.empty?
     end
-    puts "decoding frames: #{Time.now - t}"
+    logger.info "decoding frames: #{Time.now - t}"
 
     assert_equal 0, @mux.decode_buffer.size
     assert_equal packet1.payload, packets[0].payload
