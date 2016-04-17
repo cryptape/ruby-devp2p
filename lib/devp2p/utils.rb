@@ -22,6 +22,15 @@ module DEVp2p
       data
     end
 
+    ##
+    # String xor.
+    #
+    def sxor(s1, s2)
+      raise ArgumentError, "strings must have equal size" unless s1.size == s2.size
+
+      s1.bytes.zip(s2.bytes).map {|a, b| (a ^ b).chr }.join
+    end
+
     def update_config_with_defaults(config, default_config)
       default_config.each do |k, v|
         if v.is_a?(Hash)

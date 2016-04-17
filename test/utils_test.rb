@@ -4,6 +4,10 @@ require 'test_helper'
 class UtilsTest < Minitest::Test
   include DEVp2p
 
+  def test_sxor
+    assert_equal 'PPP', Utils.sxor('abc', '123')
+  end
+
   def test_update_config_with_defaults
     c = {a: {b: 1}, g: 5}
     d = {a: {b: 2, c: 3}, d: 4, e: {f: 1}}
