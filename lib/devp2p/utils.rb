@@ -1,4 +1,7 @@
 # -*- encoding : ascii-8bit -*-
+
+require 'digest/sha3'
+
 module DEVp2p
   module Utils
 
@@ -29,6 +32,10 @@ module DEVp2p
       raise ArgumentError, "strings must have equal size" unless s1.size == s2.size
 
       s1.bytes.zip(s2.bytes).map {|a, b| (a ^ b).chr }.join
+    end
+ 
+    def keccak256(x)
+      Digest::SHA3.new(256).digest(x)
     end
 
     def update_config_with_defaults(config, default_config)

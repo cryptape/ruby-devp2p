@@ -4,6 +4,7 @@ PATH
     devp2p (0.0.1)
       block_logger (~> 0.1)
       celluloid (~> 0.17)
+      digest-sha3 (~> 1.1)
       hashie (~> 3.4)
       rlp (>= 0.7.1)
 
@@ -30,6 +31,7 @@ GEM
     celluloid-supervision (0.20.5)
       timers (>= 4.1.1)
     coderay (1.1.0)
+    digest-sha3 (1.1.0)
     hashie (3.4.3)
     hitimes (1.2.3)
     little-plugger (1.1.4)
