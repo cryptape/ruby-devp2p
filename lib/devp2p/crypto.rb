@@ -22,5 +22,17 @@ module DEVp2p
       pub[1,64]
     end
 
+    def hmac_sha256(key, msg)
+      OpenSSL::HMAC.digest 'sha256', key, msg
+    end
+
+    def ecdsa_sign(msghash, privkey)
+      raise ArgumentError, 'msghash length must be 32' unless msghash.size == 32
+
+      priv = Secp256k1::PrivateKey.new privkey: privkey, raw: true
+      sig = priv.ecdsa_recoverable_serialize priv.ecdsa_sign_recoverable(msghash, raw: true)
+      "#{sig[0]}#{sig[1].chr}"
+    end
+
   end
 end
