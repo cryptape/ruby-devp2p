@@ -22,4 +22,10 @@ class ECCxTest < Minitest::Test
     assert_equal true, @ecc.valid_key?(pubkey)
   end
 
+  def test_get_ecdh_key
+    ecc = Crypto::ECCx.new "\x01"*32 # local private key
+    remote_pubkey = Crypto.privtopub "\x02"*32 # remote public key
+    assert_equal "\xD0\x15\x8A8\xFA\xF6\x11\x8A\xF13\xAF\x12\xD9\xBF\xA3\x88\xEA\xB4\xA0\x8D\x1A \x88\xEAnn\xC1&\x9E\x03V\x7F", ecc.get_ecdh_key(remote_pubkey)
+  end
+
 end

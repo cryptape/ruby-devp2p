@@ -24,11 +24,21 @@ module DEVp2p
         if valid_key?(raw_pubkey, raw_privkey)
           @raw_pubkey, @raw_privkey = raw_pubkey, raw_privkey
           @pubkey_x, @pubkey_y = decode_pubkey raw_pubkey
+          set_curve
         else
           @raw_pubkey, @raw_privkey = nil, nil
           @pubkey_x, @pubkey_y = nil, nil
           raise InvalidKeyError, "bad ECC keys"
         end
+      end
+
+      ##
+      # Compute public key with the local private key and returns a 256bits
+      # shared key
+      #
+      def get_ecdh_key(raw_pubkey)
+        pubkey = raw_pubkey_to_openssl_pubkey raw_pubkey
+        curve.dh_compute_key pubkey
       end
 
       def valid_key?(raw_pubkey, raw_privkey=nil)
@@ -58,10 +68,6 @@ module DEVp2p
         [raw_privkey, raw_pubkey[1,64]]
       end
 
-      def curve
-        @curve ||= OpenSSL::PKey::EC.new(CURVE)
-      end
-
       private
 
       def init(raw_pubkey, raw_privkey)
@@ -78,6 +84,23 @@ module DEVp2p
         [raw_pubkey[0,32], raw_pubkey[32,32]]
       end
 
+      def curve
+        @curve ||= OpenSSL::PKey::EC.new(CURVE)
+      end
+
+      def set_curve
+        curve.public_key = raw_pubkey_to_openssl_pubkey(@raw_pubkey)
+        curve.private_key = raw_privkey_to_openssl_privkey(@raw_privkey)
+      end
+
+      def raw_pubkey_to_openssl_pubkey(raw_pubkey)
+        bn = OpenSSL::BN.new Utils.encode_hex("\x04#{raw_pubkey}"), 16
+        OpenSSL::PKey::EC::Point.new curve.group, bn
+      end
+
+      def raw_privkey_to_openssl_privkey(raw_privkey)
+        OpenSSL::BN.new Utils.big_endian_to_int(raw_privkey)
+      end
 
     end
   end
