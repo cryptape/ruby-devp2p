@@ -8,3 +8,7 @@ Logging.logger.root.appenders = Logging::Appenders.file(
   File.expand_path('../../test.log', __FILE__),
   layout: Logging.layouts.pattern.new(pattern: "%.1l, [%d] %5l -- %c: %m\n")
 )
+
+def ivget(obj, name)
+  obj.instance_variable_get(name)
+end

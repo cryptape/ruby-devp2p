@@ -40,6 +40,7 @@ module DEVp2p
       @ephemeral_ecc = Crypto::ECCx.new nil, ephemeral_privkey
 
       @ready = false
+      @got_eip8_auth, @got_eip8_ack = false, false
     end
 
     ### Frame Handling
@@ -278,7 +279,7 @@ module DEVp2p
       # derive base secrets from ephemeral key agreement
       # ecdhe-shared-secret = ecdh.agree(ephemeral-privkey, remote-ephemeral-pubk)
       @ecdhe_shared_secret = @ephemeral_ecc.get_ecdh_key(@remote_ephemeral_pubkey)
-      @shared_secret = Utils.keccak256("#{ecdhe_shared_secret}#{Utils.keccak256(@responder_nonce + @initiator_nonce)}")
+      @shared_secret = Utils.keccak256("#{@ecdhe_shared_secret}#{Utils.keccak256(@responder_nonce + @initiator_nonce)}")
       @token = Utils.keccak256 @shared_secret
       @aes_secret = Utils.keccak256 "#{@ecdhe_shared_secret}#{@shared_secret}"
       @mac_secret = Utils.keccak256 "#{@ecdhe_shared_secret}#{@aes_secret}"
