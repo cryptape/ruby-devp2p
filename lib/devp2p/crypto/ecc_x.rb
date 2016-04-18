@@ -1,7 +1,6 @@
 # -*- encoding : ascii-8bit -*-
 
 require 'securerandom'
-require 'ecdsa'
 
 module DEVp2p
   module Crypto
@@ -22,9 +21,31 @@ module DEVp2p
           raw_privkey, raw_pubkey = generate_key
         end
 
-        @raw_privkey = raw_privkey
-        @raw_pubkey = raw_pubkey
-        @pubkey_x, @pubkey_y = decode_pubkey raw_pubkey
+        if valid_key?(raw_pubkey, raw_privkey)
+          @raw_pubkey, @raw_privkey = raw_pubkey, raw_privkey
+          @pubkey_x, @pubkey_y = decode_pubkey raw_pubkey
+        else
+          @raw_pubkey, @raw_privkey = nil, nil
+          @pubkey_x, @pubkey_y = nil, nil
+          raise InvalidKeyError, "bad ECC keys"
+        end
+      end
+
+      def valid_key?(raw_pubkey, raw_privkey=nil)
+        return false unless raw_pubkey.size == 64
+
+        group = OpenSSL::PKey::EC::Group.new CURVE
+        bn = OpenSSL::BN.new Utils.encode_hex("\x04#{raw_pubkey}"), 16
+        point = OpenSSL::PKey::EC::Point.new group, bn
+
+        key = OpenSSL::PKey::EC.new(CURVE)
+        key.public_key = point
+        key.private_key = OpenSSL::BN.new Utils.big_endian_to_int(raw_privkey) if raw_privkey
+        key.check_key
+
+        true
+      rescue
+        false
       end
 
       def generate_key
@@ -57,9 +78,6 @@ module DEVp2p
         [raw_pubkey[0,32], raw_pubkey[32,32]]
       end
 
-      def set_keys
-
-      end
 
     end
   end
