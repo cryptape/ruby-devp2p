@@ -34,5 +34,15 @@ module DEVp2p
       "#{sig[0]}#{sig[1].chr}"
     end
 
+    def ecdsa_recover(msghash, sig)
+      raise ArgumentError, 'msghash length must be 32' unless msghash.size == 32
+      raise ArgumentError, 'signature length must be 65' unless sig.size == 65
+
+      pub = Secp256k1::PublicKey.new flags: Secp256k1::ALL_FLAGS
+      recsig = pub.ecdsa_recoverable_deserialize sig[0,64], sig[64].ord
+      pub.public_key = pub.ecdsa_recover msghash, recsig, raw: true
+      pub.serialize(compressed: false)[1..-1]
+    end
+
   end
 end

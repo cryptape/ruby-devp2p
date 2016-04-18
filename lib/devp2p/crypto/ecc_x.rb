@@ -8,6 +8,7 @@ module DEVp2p
 
       CURVE = 'secp256k1'.freeze
       CIPHER = 'AES-128-CTR'.freeze
+      CIPHER_BLOCK_SIZE = 16 # 128 / 8
 
       ECIES_ENCRYPT_OVERHEAD_LENGTH = 113
 
@@ -58,12 +59,12 @@ module DEVp2p
       # 3. generate R = rG [ same op as generating a public key ]
       # 4. send 0x04 || R || AsymmetricEncrypt(shared-secret, plaintext) || tag
       #
-      def ecies_encrypt(data, raw_pubkey, shared_mac_data='')
+      def ecies_encrypt(data, remote_pubkey, shared_mac_data='')
         # 1. generate r = random value
         ephem = ECCx.new
 
         # 2. generate shared-secret = kdf( ecdhAgree(r, P) )
-        key_material = ephem.get_ecdh_key(@raw_pubkey)
+        key_material = ephem.get_ecdh_key(remote_pubkey)
         raise InvalidKeyError unless key_material.size == 32
 
         key = eciesKDF key_material, 32
@@ -92,6 +93,54 @@ module DEVp2p
 
         raise EncryptionError unless msg.size == ECIES_ENCRYPT_OVERHEAD_LENGTH + data.size
         msg
+      end
+
+      ##
+      # Decrypt data with ECIES method using the local private key
+      #
+      # ECIES Decrypt (performed by recipient):
+      #
+      # 1. generate shared-secret = kdf( ecdhAgree(myPrivKey, msg[1,64]) )
+      # 2. verify tag
+      # 3. decrypt
+      #
+      # ecdhAgree(r, recipientPublic) == ecdhAgree(recipientPrivate, R)
+      #   where R = r*G, recipientPublic = recipientPrivate * G
+      #
+      def ecies_decrypt(data, shared_mac_data='')
+        raise DecryptionError, 'wrong ecies header' unless data[0] == "\x04"
+
+        # 1. generate shared-secret = kdf( ecdhAgree(myPrivKey, msg[1,64]) )
+        shared = data[1,64] # ephem_pubkey
+        raise DecryptionError, 'invalid shared secret' unless valid_key?(shared)
+
+        key_material = get_ecdh_key shared
+        raise InvalidKeyError unless key_material.size == 32
+
+        key = eciesKDF key_material, 32
+        raise InvalidKeyError unless key.size == 32
+        key_enc, key_mac = key[0,16], key[16,16]
+
+        key_mac = Digest::SHA256.digest(key_mac)
+        raise InvalidKeyError unless key_mac.size == 32
+
+        tag = data[-32..-1]
+        raise InvalidMACError unless tag.size == 32
+
+        # 2. verify tag
+        raise DecryptionError, 'Fail to verify data' unless Crypto.hmac_sha256(key_mac, "#{data[65...-32]}#{shared_mac_data}") == tag
+
+        # 3. decrypt
+        iv = data[65,CIPHER_BLOCK_SIZE]
+        ciphertext = data[(65+CIPHER_BLOCK_SIZE)...-32]
+        raise DecryptionError unless 1 + shared.size + iv.size + ciphertext.size + tag.size == data.size
+
+        ctx = OpenSSL::Cipher.new CIPHER
+        ctx.decrypt
+        ctx.key = key_enc
+        ctx.iv = iv
+
+        ctx.update(ciphertext) + ctx.final
       end
 
       ##

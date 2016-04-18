@@ -32,6 +32,8 @@ module DEVp2p
       )
     )
 
+    attr :ecc
+
     def initialize(ecc, is_initiator=false, ephemeral_privkey=nil)
       @ecc = ecc
       @is_initiator = is_initiator
@@ -230,7 +232,7 @@ module DEVp2p
 
       if eip8 || @got_eip8_auth
         # The EIP-8 version has an authenticated length prefix
-        prefix = ["#{ack_message.size}#{@ecc.ecies_encrypt_overhead_length}"].pack("H>")
+        prefix = ["#{ack_message.size}#{@ecc.ecies_encrypt_overhead_length}"].pack("S>")
         @auth_ack = "#{prefix}#{@ecc.ecies_encrypt(ack_message, remote_pubkey, prefix)}"
       else
         @auth_ack = @ecc.ecies_encrypt ack_message, remote_pubkey
@@ -373,7 +375,7 @@ module DEVp2p
     # decode EIP-8 auth message format
     #
     def decode_auth_eip8(ciphertext)
-      size = ciphertext[0,2].unpack('H>').first + 2
+      size = ciphertext[0,2].unpack('S>').first + 2
       raise RLPxSessionError, 'invalid ciphertext size' unless ciphertext.size >= size
 
       message = begin
@@ -411,7 +413,7 @@ module DEVp2p
     # decode EIP-8 ack message format
     #
     def decode_ack_eip8(ciphertext)
-      size = ciphertext[0,2].unpack('H>').first + 2
+      size = ciphertext[0,2].unpack('S>').first + 2
       raise RLPxSessionError, 'invalid ciphertext length' unless ciphertext.size == size
 
       message = begin

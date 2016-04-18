@@ -14,5 +14,6 @@ module DEVp2p
   class InvalidSignatureError < StandardError; end
   class InvalidMACError < StandardError; end
   class EncryptionError < StandardError; end
+  class DecryptionError < StandardError; end
 
 end
