@@ -24,6 +24,7 @@ require 'devp2p/packet'
 require 'devp2p/frame'
 require 'devp2p/multiplexer'
 
+require 'devp2p/crypto'
 require 'devp2p/rlpx_session'
 
 require 'devp2p/command'

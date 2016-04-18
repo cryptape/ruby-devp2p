@@ -5,6 +5,8 @@ require 'digest/sha3'
 module DEVp2p
   module Utils
 
+    BYTE_ZERO = "\x00".freeze
+
     extend self
 
     def encode_hex(b)
@@ -25,6 +27,15 @@ module DEVp2p
 
     def ceil16(x)
       x % 16 == 0 ? x : (x + 16 - (x%16))
+    end
+
+    def lpad(x, symbol, l)
+      return x if x.size >= l
+      symbol * (l - x.size) + x
+    end
+
+    def zpad(x, l)
+      lpad x, BYTE_ZERO, l
     end
 
     def rzpad16(data)
