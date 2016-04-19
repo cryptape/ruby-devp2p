@@ -4,10 +4,6 @@ require 'test_helper'
 class UtilsTest < Minitest::Test
   include DEVp2p
 
-  def test_keccak256
-    assert_equal 'c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470', Utils.encode_hex(Utils.keccak256(''))
-  end
-
   def test_sxor
     assert_equal 'PPP', Utils.sxor('abc', '123')
   end

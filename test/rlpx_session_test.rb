@@ -243,10 +243,10 @@ class RLPxSessionTest < Minitest::Test
     initiator, responder = test_session
 
     5.times do |i|
-      msg_frame = Utils.keccak256("#{i}f") * i + 'notpadded'
+      msg_frame = Crypto.keccak256("#{i}f") * i + 'notpadded'
       msg_frame_padded = Utils.rzpad16 msg_frame
 
-      msg_header = Frame.encode_body_size(msg_frame.size) + Utils.keccak256(i.to_s)[0,16-3]
+      msg_header = Frame.encode_body_size(msg_frame.size) + Crypto.keccak256(i.to_s)[0,16-3]
       msg_ct = initiator.encrypt msg_header, msg_frame_padded
 
       r = responder.decrypt msg_ct
@@ -255,8 +255,8 @@ class RLPxSessionTest < Minitest::Test
     end
 
     5.times do |i|
-      msg_frame = Utils.keccak256 "#{i}f"
-      msg_header = Frame.encode_body_size(msg_frame.size) + Utils.keccak256(i.to_s)[0,16-3]
+      msg_frame = Crypto.keccak256 "#{i}f"
+      msg_header = Frame.encode_body_size(msg_frame.size) + Crypto.keccak256(i.to_s)[0,16-3]
       msg_ct = responder.encrypt(msg_header, msg_frame)
 
       r = initiator.decrypt msg_ct
@@ -268,9 +268,9 @@ class RLPxSessionTest < Minitest::Test
   def test_body_length
     initiator, responder = test_session
 
-    msg_frame = Utils.keccak256('test') + 'notpadded'
+    msg_frame = Crypto.keccak256('test') + 'notpadded'
     msg_frame_padded = Utils.rzpad16 msg_frame
-    msg_header = Frame.encode_body_size(msg_frame.size) + Utils.keccak256('x')[0,16-3]
+    msg_header = Frame.encode_body_size(msg_frame.size) + Crypto.keccak256('x')[0,16-3]
     msg_ct = initiator.encrypt(msg_header, msg_frame_padded)
 
     r = responder.decrypt msg_ct

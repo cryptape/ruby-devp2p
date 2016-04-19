@@ -1,6 +1,7 @@
 # -*- encoding : ascii-8bit -*-
 
 require 'secp256k1' # bitcoin-secp256k1
+require 'digest/sha3'
 
 require 'devp2p/crypto/ecies'
 require 'devp2p/crypto/ecc_x'
@@ -11,7 +12,7 @@ module DEVp2p
     extend self
 
     def mk_privkey(seed)
-      Utils.keccak256 seed
+      Crypto.keccak256 seed
     end
 
     def privtopub(privkey)
@@ -21,6 +22,10 @@ module DEVp2p
       raise InvalidKeyError, 'invalid pubkey' unless pub.size == 65 && pub[0] == "\x04"
 
       pub[1,64]
+    end
+
+    def keccak256(x)
+      Digest::SHA3.new(256).digest(x)
     end
 
     def hmac_sha256(key, msg)

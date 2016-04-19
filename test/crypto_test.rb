@@ -8,6 +8,10 @@ class CryptoTest < Minitest::Test
     assert_equal "\e\x84\xC5V{\x12d@\x99]>\xD5\xAA\xBA\x05e\xD7\x1E\x184`H\x19\xFF\x9C\x17\xF5\xE9\xD5\xDD\a\x8Fp\xBE\xAF\x8FX\x8BT\x15\a\xFE\xD6\xA6B\xC5\xABB\xDF\xDF\x81 \xA7\xF69\xDEQ\"\xD4zi\xA8\xE8\xD1", Crypto.privtopub("\x01"*32)
   end
 
+  def test_keccak256
+    assert_equal 'c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470', Utils.encode_hex(Crypto.keccak256(''))
+  end
+
   def test_hmac_sha256
     assert_equal "rQ\xB8\xD0\xA5@\x88Q$\xD9\x7F'\xC5\xFC[\x84}\x87E6!\xF4#\xE7+\x9D\xE2\xA2\xE6\xE0\x00^", Crypto.hmac_sha256("\x01"*32, 'ether')
   end

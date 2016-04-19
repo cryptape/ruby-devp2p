@@ -134,7 +134,7 @@ module DEVp2p
       token = @ecc.get_ecdh_key remote_pubkey
       flag = 0x0
 
-      @initiator_nonce = nonce || Utils.keccak256(Utils.int_to_big_endian(SecureRandom.random_number(TT256)))
+      @initiator_nonce = nonce || Crypto.keccak256(Utils.int_to_big_endian(SecureRandom.random_number(TT256)))
       raise RLPxSessionError, 'invalid nonce length' unless @initiator_nonce.size == 32
 
       token_xor_nonce = Utils.sxor token, @initiator_nonce
@@ -146,7 +146,7 @@ module DEVp2p
       sig = @ephemeral_ecc.sign token_xor_nonce
       raise RLPxSessionError, 'invalid signature' unless sig.size == 65
 
-      auth_message = "#{sig}#{Utils.keccak256(ephemeral_pubkey)}#{@ecc.raw_pubkey}#{@initiator_nonce}#{flag.chr}"
+      auth_message = "#{sig}#{Crypto.keccak256(ephemeral_pubkey)}#{@ecc.raw_pubkey}#{@initiator_nonce}#{flag.chr}"
       raise RLPxSessionError, 'invalid auth message length' unless auth_message.size == 194
 
       auth_message
@@ -209,7 +209,7 @@ module DEVp2p
       raise RLPxSessionError, 'must not be initiator' if initiator?
 
       ephemeral_pubkey = ephemeral_pubkey || @ephemeral_ecc.raw_pubkey
-      @responder_nonce = nonce || Utils.keccak256(Utils.int_to_big_endian(SecureRandom.random_number(TT256)))
+      @responder_nonce = nonce || Crypto.keccak256(Utils.int_to_big_endian(SecureRandom.random_number(TT256)))
 
       if eip8 || @got_eip8_auth
         msg = create_eip8_auth_ack_message ephemeral_pubkey, @responder_nonce, version
@@ -281,10 +281,10 @@ module DEVp2p
       # derive base secrets from ephemeral key agreement
       # ecdhe-shared-secret = ecdh.agree(ephemeral-privkey, remote-ephemeral-pubk)
       @ecdhe_shared_secret = @ephemeral_ecc.get_ecdh_key(@remote_ephemeral_pubkey)
-      @shared_secret = Utils.keccak256("#{@ecdhe_shared_secret}#{Utils.keccak256(@responder_nonce + @initiator_nonce)}")
-      @token = Utils.keccak256 @shared_secret
-      @aes_secret = Utils.keccak256 "#{@ecdhe_shared_secret}#{@shared_secret}"
-      @mac_secret = Utils.keccak256 "#{@ecdhe_shared_secret}#{@aes_secret}"
+      @shared_secret = Crypto.keccak256("#{@ecdhe_shared_secret}#{Crypto.keccak256(@responder_nonce + @initiator_nonce)}")
+      @token = Crypto.keccak256 @shared_secret
+      @aes_secret = Crypto.keccak256 "#{@ecdhe_shared_secret}#{@shared_secret}"
+      @mac_secret = Crypto.keccak256 "#{@ecdhe_shared_secret}#{@aes_secret}"
 
       mac1 = keccak256 "#{Utils.sxor(@mac_secret, @responder_nonce)}#{@auth_init}"
       mac2 = keccak256 "#{Utils.sxor(@mac_secret, @initiator_nonce)}#{@auth_ack}"

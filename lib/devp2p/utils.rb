@@ -1,7 +1,5 @@
 # -*- encoding : ascii-8bit -*-
 
-require 'digest/sha3'
-
 module DEVp2p
   module Utils
 
@@ -53,10 +51,6 @@ module DEVp2p
       s1.bytes.zip(s2.bytes).map {|a, b| (a ^ b).chr }.join
     end
  
-    def keccak256(x)
-      Digest::SHA3.new(256).digest(x)
-    end
-
     def update_config_with_defaults(config, default_config)
       default_config.each do |k, v|
         if v.is_a?(Hash)
