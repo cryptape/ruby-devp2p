@@ -32,12 +32,14 @@ module DEVp2p
       )
     )
 
-    attr :ecc
+    attr :ecc, :ephemeral_ecc,
+      :initiator_nonce, :responder_nonce,
+      :remote_version, :remote_pubkey, :remote_ephemeral_pubkey
 
     def initialize(ecc, is_initiator=false, ephemeral_privkey=nil)
       @ecc = ecc
       @is_initiator = is_initiator
-      @ephemeral_ecc = Crypto::ECCx.new nil, ephemeral_privkey
+      @ephemeral_ecc = Crypto::ECCx.new ephemeral_privkey
 
       @ready = false
       @got_eip8_auth, @got_eip8_ack = false, false
@@ -203,7 +205,7 @@ module DEVp2p
     #
     # nonce, ephemeral_pubkey, version are local
     #
-    def create_auth_ack_message(version=SUPPORTED_RLPX_VERSION, eip8=false, ephemeral_pubkey=nil, nonce=nil)
+    def create_auth_ack_message(ephemeral_pubkey=nil, nonce=nil, version=SUPPORTED_RLPX_VERSION, eip8=false)
       raise RLPxSessionError, 'must not be initiator' if initiator?
 
       ephemeral_pubkey = ephemeral_pubkey || @ephemeral_ecc.raw_pubkey
@@ -233,7 +235,7 @@ module DEVp2p
 
       if eip8 || @got_eip8_auth
         # The EIP-8 version has an authenticated length prefix
-        prefix = ["#{ack_message.size}#{@ecc.ecies_encrypt_overhead_length}"].pack("S>")
+        prefix = [ack_message.size + Crypto::ECCx::ECIES_ENCRYPT_OVERHEAD_LENGTH].pack("S>")
         @auth_ack = "#{prefix}#{@ecc.ecies_encrypt(ack_message, remote_pubkey, prefix)}"
       else
         @auth_ack = @ecc.ecies_encrypt ack_message, remote_pubkey

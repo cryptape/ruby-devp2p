@@ -175,4 +175,120 @@ class RLPxSessionTest < Minitest::Test
       assert_equal '', auth_rest
     end
   end
+
+  def test_eip8_key_derivation
+    responder = RLPxSession.new Crypto::ECCx.new(EIP8Values[:key_b]), false, EIP8Values[:eph_key_b]
+    responder.decode_authentication EIP8Handshakes[1][:auth]
+    ack = responder.create_auth_ack_message nil, EIP8Values[:nonce_b]
+    responder.encrypt_auth_ack_message ack
+
+    responder.setup_cipher
+    want_aes_secret = Utils.decode_hex('80e8632c05fed6fc2a13b0f8d31a3cf645366239170ea067065aba8e28bac487')
+    want_mac_secret = Utils.decode_hex('2ea74ec5dae199227dff1af715362700e989d889d7a493cb0639691efb8e5f98')
+    assert_equal want_aes_secret, ivget(responder, :@aes_secret)
+    assert_equal want_mac_secret, ivget(responder, :@mac_secret)
+
+    mac_digest = responder.ingress_mac('foo')
+    want_mac_digest = Utils.decode_hex '0c7ec6340062cc46f5e9f1e3cf86f8c8c403c5a0964f5df0ebd34a75ddc86db5'
+    assert_equal want_mac_digest, mac_digest
+  end
+
+  def test_auth_ack_is_eip8_for_eip8_auth
+    responder = RLPxSession.new Crypto::ECCx.new(EIP8Values[:key_b])
+    responder.decode_authentication EIP8Handshakes[1][:auth]
+    assert ivget(responder, :@got_eip8_auth)
+
+    ack = responder.create_auth_ack_message nil, nil, 55
+    ack_ct = responder.encrypt_auth_ack_message ack
+
+    initiator = RLPxSession.new Crypto::ECCx.new(EIP8Values[:key_a]), true
+    initiator.decode_auth_ack_message ack_ct
+    assert ivget(initiator, :@got_eip8_ack)
+    assert_equal 55, initiator.remote_version
+  end
+
+  def test_macs
+    initiator, responder = test_session
+
+    assert_equal responder.egress_mac(''), initiator.ingress_mac('')
+    assert_equal responder.ingress_mac(''), initiator.egress_mac('')
+
+    5.times do |i|
+      msg = 'test'
+      id = initiator.egress_mac(msg)
+      rd = responder.ingress_mac(msg)
+      assert_equal id, rd
+    end
+  end
+
+  def test_mac_enc
+    initiator, responder = test_session
+
+    msg = 'a'*16
+    assert_equal responder.mac_enc(msg), initiator.mac_enc(msg)
+  end
+
+  def test_aes_enc
+    initiator, responder = test_session
+
+    msg = 'test'
+    c = initiator.aes_enc(msg)
+    assert_equal msg.size, c.size
+
+    d = responder.aes_dec(c)
+    assert_equal msg, d
+  end
+
+  def test_encryption
+    initiator, responder = test_session
+
+    5.times do |i|
+      msg_frame = Utils.keccak256("#{i}f") * i + 'notpadded'
+      msg_frame_padded = Utils.rzpad16 msg_frame
+
+      msg_header = Frame.encode_body_size(msg_frame.size) + Utils.keccak256(i.to_s)[0,16-3]
+      msg_ct = initiator.encrypt msg_header, msg_frame_padded
+
+      r = responder.decrypt msg_ct
+      assert_equal msg_header, r[:header]
+      assert_equal msg_frame, r[:frame]
+    end
+
+    5.times do |i|
+      msg_frame = Utils.keccak256 "#{i}f"
+      msg_header = Frame.encode_body_size(msg_frame.size) + Utils.keccak256(i.to_s)[0,16-3]
+      msg_ct = responder.encrypt(msg_header, msg_frame)
+
+      r = initiator.decrypt msg_ct
+      assert_equal msg_header, r[:header]
+      assert_equal msg_frame, r[:frame]
+    end
+  end
+
+  def test_body_length
+    initiator, responder = test_session
+
+    msg_frame = Utils.keccak256('test') + 'notpadded'
+    msg_frame_padded = Utils.rzpad16 msg_frame
+    msg_header = Frame.encode_body_size(msg_frame.size) + Utils.keccak256('x')[0,16-3]
+    msg_ct = initiator.encrypt(msg_header, msg_frame_padded)
+
+    r = responder.decrypt msg_ct
+    assert_equal msg_header, r[:header]
+    assert_equal msg_frame, r[:frame]
+
+    # test excess data
+    msg_ct2 = initiator.encrypt msg_header, msg_frame_padded
+    r = responder.decrypt "#{msg_ct2}excess data"
+    assert_equal msg_header, r[:header]
+    assert_equal msg_frame, r[:frame]
+    assert_equal msg_ct.size, r[:bytes_read]
+
+    # test data underflow
+    data = initiator.encrypt msg_header, msg_frame_padded
+    header = responder.decrypt_header data[0,32]
+    body_size = Frame.decode_body_size(header)
+    assert_raises(FormatError) { responder.decrypt_body data[32...-1], body_size }
+  end
+
 end
