@@ -8,6 +8,13 @@ class CryptoTest < Minitest::Test
     assert_equal "\e\x84\xC5V{\x12d@\x99]>\xD5\xAA\xBA\x05e\xD7\x1E\x184`H\x19\xFF\x9C\x17\xF5\xE9\xD5\xDD\a\x8Fp\xBE\xAF\x8FX\x8BT\x15\a\xFE\xD6\xA6B\xC5\xABB\xDF\xDF\x81 \xA7\xF69\xDEQ\"\xD4zi\xA8\xE8\xD1", Crypto.privtopub("\x01"*32)
   end
 
+  def test_privtopub2
+    priv = Crypto.mk_privkey 'test'
+    pub = Crypto.privtopub priv
+    pub2 = Crypto::ECCx.new(priv).raw_pubkey
+    assert_equal pub, pub2
+  end
+
   def test_keccak256
     assert_equal 'c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470', Utils.encode_hex(Crypto.keccak256(''))
   end
@@ -19,4 +26,15 @@ class CryptoTest < Minitest::Test
   def test_ecdsa_sign
     assert_equal "R\x90\xB9\xF6r/M\x1A\xAB\x99\xF0\"\xF8\xD6\xF1\xFA\xE6\x83\x00C9\x153\xA8L;\x127\xD3\xBD\x8DWP\xDD%\x06\xCD\x04o\xEBD_\xDD8\xAF\xEF\x9D\x7F\xB6\xEE\x18/R\xDCE*\t1\xCEHcz\xCC\xC6\x00", Crypto.ecdsa_sign("1"*32, "\x01"*32)
   end
+
+  def test_recover
+    alice = Crypto::ECCx.new Crypto.mk_privkey('secret1')
+    message = (0...1024).map { SecureRandom.random_number(256).chr }.join
+    message = Crypto.keccak256 message
+    signature = alice.sign message
+
+    recovered_pubkey = Crypto.ecdsa_recover message, signature
+    assert_equal alice.raw_pubkey, recovered_pubkey
+  end
+
 end
