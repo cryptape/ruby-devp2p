@@ -2,7 +2,7 @@ PATH
   remote: .
   specs:
     devp2p (0.0.1)
-      bitcoin-secp256k1 (~> 0.3)
+      bitcoin-secp256k1 (= 0.3.1)
       block_logger (~> 0.1)
       celluloid (~> 0.17)
       digest-sha3 (~> 1.1)
@@ -12,7 +12,7 @@ PATH
 GEM
   remote: https://rubygems.org/
   specs:
-    bitcoin-secp256k1 (0.3.0)
+    bitcoin-secp256k1 (0.3.1)
       ffi (>= 1.9.10)
     block_logger (0.1.0)
       logging (~> 2.0)

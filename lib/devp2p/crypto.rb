@@ -50,6 +50,17 @@ module DEVp2p
       pub.serialize(compressed: false)[1..-1]
     end
 
+    def ecdsa_verify(pubkey, sig, msg)
+      raise ArgumentError, 'invalid signature length' unless sig.size == 65
+      raise ArgumentError, 'invalid pubkey length' unless pubkey.size == 64
+
+      pub = Secp256k1::PublicKey.new pubkey: "\x04#{pubkey}", raw: true
+      raw_sig = pub.ecdsa_recoverable_convert pub.ecdsa_recoverable_deserialize(sig[0,64], sig[64].ord)
+
+      pub.ecdsa_verify msg, raw_sig, raw: true
+    end
+    alias verify ecdsa_verify
+
     ##
     # Encrypt data with ECIES method using the public key of the recipient.
     #

@@ -42,6 +42,17 @@ class ECCxTest < Minitest::Test
     assert_equal pt, bob.decrypt(ct)
   end
 
+  def test_signature
+    bob = get_ecc 'secret2'
+
+    # sign
+    message = Crypto.keccak256 'Hello Alice'
+    signature = bob.sign message
+
+    assert_equal true, Crypto.verify(bob.raw_pubkey, signature, message)
+    assert_equal true, Crypto::ECCx.new(nil, bob.raw_pubkey).verify(signature, message)
+  end
+
   private
 
   def get_ecc(secret='')

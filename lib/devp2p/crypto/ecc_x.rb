@@ -47,12 +47,16 @@ module DEVp2p
         end
 
         def raw_pubkey_to_openssl_pubkey(raw_pubkey)
+          return unless raw_pubkey
+
           bn = OpenSSL::BN.new Utils.encode_hex("\x04#{raw_pubkey}"), 16
           group = OpenSSL::PKey::EC::Group.new CURVE
           OpenSSL::PKey::EC::Point.new group, bn
         end
 
         def raw_privkey_to_openssl_privkey(raw_privkey)
+          return unless raw_privkey
+
           OpenSSL::BN.new Utils.big_endian_to_int(raw_privkey)
         end
       end
@@ -65,7 +69,7 @@ module DEVp2p
         elsif raw_privkey
           raw_pubkey = Crypto.privtopub raw_privkey
         elsif raw_pubkey
-          # do nothing
+          raise ArgumentError, 'invalid pubkey length' unless raw_pubkey.size == 64
         else
           raw_privkey, raw_pubkey = self.class.generate_key
         end
@@ -85,6 +89,11 @@ module DEVp2p
         sig = Crypto.ecdsa_sign data, @raw_privkey
         raise InvalidSignatureError unless sig.size == 65
         sig
+      end
+
+      def verify(sig, msg)
+        raise ArgumentError, 'invalid signature length' unless sig.size == 65
+        Crypto.ecdsa_verify @raw_pubkey, sig, msg
       end
 
       def get_ecdh_key(raw_pubkey)

@@ -20,7 +20,7 @@ Gem::Specification.new do |s|
   s.add_dependency('block_logger', ['~> 0.1'])
   s.add_dependency('celluloid', ['~> 0.17'])
   s.add_dependency('digest-sha3', ['~> 1.1'])
-  s.add_dependency('bitcoin-secp256k1', ['~> 0.3'])
+  s.add_dependency('bitcoin-secp256k1', ['0.3.1'])
   s.add_dependency('rlp', ['>= 0.7.1'])
 
   s.add_development_dependency('rake', ['~> 10.5'])
