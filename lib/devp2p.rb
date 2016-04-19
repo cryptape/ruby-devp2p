@@ -26,6 +26,7 @@ require 'devp2p/multiplexer'
 
 require 'devp2p/crypto'
 require 'devp2p/rlpx_session'
+require 'devp2p/multiplexed_session'
 
 require 'devp2p/command'
 require 'devp2p/base_protocol'
