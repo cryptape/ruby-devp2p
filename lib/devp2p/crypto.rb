@@ -2,6 +2,7 @@
 
 require 'secp256k1' # bitcoin-secp256k1
 
+require 'devp2p/crypto/ecies'
 require 'devp2p/crypto/ecc_x'
 
 module DEVp2p
@@ -42,6 +43,14 @@ module DEVp2p
       recsig = pub.ecdsa_recoverable_deserialize sig[0,64], sig[64].ord
       pub.public_key = pub.ecdsa_recover msghash, recsig, raw: true
       pub.serialize(compressed: false)[1..-1]
+    end
+
+    ##
+    # Encrypt data with ECIES method using the public key of the recipient.
+    #
+    def encrypt(data, raw_pubkey)
+      raise ArgumentError, "invalid pubkey of length #{raw_pubkey.size}" unless raw_pubkey.size == 64
+      Crypto::ECIES.encrypt data, raw_pubkey
     end
 
   end

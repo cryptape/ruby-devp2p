@@ -127,7 +127,7 @@ module DEVp2p
     #
     def create_auth_message(remote_pubkey, ephemeral_privkey=nil, nonce=nil)
       raise RLPxSessionError, 'must be initiator' unless initiator?
-      raise InvalidKeyError, 'invalid remote pubkey' unless @ecc.valid_key?(remote_pubkey)
+      raise InvalidKeyError, 'invalid remote pubkey' unless Crypto::ECCx.valid_key?(remote_pubkey)
 
       @remote_pubkey = remote_pubkey
 
@@ -141,7 +141,7 @@ module DEVp2p
       raise RLPxSessionError, 'invalid token xor nonce length' unless token_xor_nonce.size == 32
 
       ephemeral_pubkey = @ephemeral_ecc.raw_pubkey
-      raise InvalidKeyError, 'invalid ephemeral pubkey' unless ephemeral_pubkey.size == 512 / 8 && @ecc.valid_key?(ephemeral_pubkey)
+      raise InvalidKeyError, 'invalid ephemeral pubkey' unless ephemeral_pubkey.size == 512 / 8 && Crypto::ECCx.valid_key?(ephemeral_pubkey)
 
       sig = @ephemeral_ecc.sign token_xor_nonce
       raise RLPxSessionError, 'invalid signature' unless sig.size == 65
@@ -188,7 +188,7 @@ module DEVp2p
 
       token = @ecc.get_ecdh_key initiator_pubkey
       @remote_ephemeral_pubkey = Crypto.ecdsa_recover(Utils.sxor(token, nonce), sig)
-      raise InvalidKeyError, 'invalid remote ephemeral pubkey' unless @ecc.valid_key?(@remote_ephemeral_pubkey)
+      raise InvalidKeyError, 'invalid remote ephemeral pubkey' unless Crypto::ECCx.valid_key?(@remote_ephemeral_pubkey)
 
       @initiator_nonce = nonce
       @remote_pubkey = initiator_pubkey
@@ -235,7 +235,7 @@ module DEVp2p
 
       if eip8 || @got_eip8_auth
         # The EIP-8 version has an authenticated length prefix
-        prefix = [ack_message.size + Crypto::ECCx::ECIES_ENCRYPT_OVERHEAD_LENGTH].pack("S>")
+        prefix = [ack_message.size + Crypto::ECIES::ENCRYPT_OVERHEAD_LENGTH].pack("S>")
         @auth_ack = "#{prefix}#{@ecc.ecies_encrypt(ack_message, remote_pubkey, prefix)}"
       else
         @auth_ack = @ecc.ecies_encrypt ack_message, remote_pubkey
@@ -263,7 +263,7 @@ module DEVp2p
       @responder_nonce = nonce
       @remote_version = version
 
-      raise InvalidKeyError, 'invalid remote ephemeral pubkey' unless @ecc.valid_key?(@remote_ephemeral_pubkey)
+      raise InvalidKeyError, 'invalid remote ephemeral pubkey' unless Crypto::ECCx.valid_key?(@remote_ephemeral_pubkey)
 
       ciphertext[size..-1]
     end
@@ -276,7 +276,7 @@ module DEVp2p
       raise RLPxSessionError, 'missing auth_init' unless @auth_init
       raise RLPxSessionError, 'missing auth_ack' unless @auth_ack
       raise RLPxSessionError, 'missing remote ephemeral pubkey' unless @remote_ephemeral_pubkey
-      raise InvalidKeyError, 'invalid remote ephemeral pubkey' unless @ecc.valid_key?(@remote_ephemeral_pubkey)
+      raise InvalidKeyError, 'invalid remote ephemeral pubkey' unless Crypto::ECCx.valid_key?(@remote_ephemeral_pubkey)
 
       # derive base secrets from ephemeral key agreement
       # ecdhe-shared-secret = ecdh.agree(ephemeral-privkey, remote-ephemeral-pubk)
@@ -365,7 +365,7 @@ module DEVp2p
 
       sig = message[0,65]
       pubkey = message[65+32,64]
-      raise InvalidKeyError, 'invalid initiator pubkey' unless @ecc.valid_key?(pubkey)
+      raise InvalidKeyError, 'invalid initiator pubkey' unless Crypto::ECCx.valid_key?(pubkey)
 
       nonce = message[65+32+64,32]
       flag = message[(65+32+64+32)..-1].ord

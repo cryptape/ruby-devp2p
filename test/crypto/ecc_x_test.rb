@@ -4,22 +4,18 @@ require 'test_helper'
 class ECCxTest < Minitest::Test
   include DEVp2p
 
-  def setup
-    @ecc = Crypto::ECCx.new
-  end
-
   def test_generate_key
-    privkey, pubkey = @ecc.generate_key
+    privkey, pubkey = Crypto::ECCx.generate_key
     assert_equal 32, privkey.size
     assert_equal 64, pubkey.size
     assert_equal Crypto.privtopub(privkey), pubkey
   end
 
   def test_valid_key
-    privkey, pubkey = @ecc.generate_key
-    assert_equal false, @ecc.valid_key?(pubkey, "\x01"*32)
-    assert_equal true, @ecc.valid_key?(pubkey, privkey)
-    assert_equal true, @ecc.valid_key?(pubkey)
+    privkey, pubkey = Crypto::ECCx.generate_key
+    assert_equal false, Crypto::ECCx.valid_key?(pubkey, "\x01"*32)
+    assert_equal true, Crypto::ECCx.valid_key?(pubkey, privkey)
+    assert_equal true, Crypto::ECCx.valid_key?(pubkey)
   end
 
   def test_get_ecdh_key
@@ -28,8 +24,28 @@ class ECCxTest < Minitest::Test
     assert_equal "\xD0\x15\x8A8\xFA\xF6\x11\x8A\xF13\xAF\x12\xD9\xBF\xA3\x88\xEA\xB4\xA0\x8D\x1A \x88\xEAnn\xC1&\x9E\x03V\x7F", ecc.get_ecdh_key(remote_pubkey)
   end
 
-  def test_eciesKDF
-    assert_equal "\xF0?\xB9/\xB7o\xCE\x8F\xD8\xB2\xD7\xE4\xD4\x8CFo;\xA1T\b\xDBg\xB4\t\x92\xC2-\nt\xE79'", @ecc.eciesKDF("\x01"*32, 32)
+  def test_valid_ecc
+    e = get_ecc
+    assert_equal 64, e.raw_pubkey.size
+    assert Crypto::ECCx.valid_key?(e.raw_pubkey)
+    assert Crypto::ECCx.valid_key?(e.raw_pubkey, ivget(e, :@raw_privkey))
+
+    pubkey = "\x00"*64
+    assert !Crypto::ECCx.valid_key?(pubkey)
+  end
+
+  def test_asymetric
+    bob = get_ecc 'secret2'
+
+    pt = 'Hello Bob'
+    ct = Crypto.encrypt pt, bob.raw_pubkey
+    assert_equal pt, bob.decrypt(ct)
+  end
+
+  private
+
+  def get_ecc(secret='')
+    Crypto::ECCx.new Crypto.mk_privkey(secret)
   end
 
 end
