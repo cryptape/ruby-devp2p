@@ -116,11 +116,11 @@ module DEVp2p
         raise FrameError, "invalid priority packet frames" unless frames.size == 1
         raise FrameError, "frame too large for priority packet" unless frames[0].frame_size <= self.class.max_priority_frame_size
 
-        queues[:priority].push frames[0]
+        queues[:priority].enq frames[0]
       elsif frames.size == 1
-        queues[:normal].push frames[0]
+        queues[:normal].enq frames[0]
       else
-        frames.each {|f| queues[:chunked].push f }
+        frames.each {|f| queues[:chunked].enq f }
       end
     end
 
@@ -153,7 +153,7 @@ module DEVp2p
           if !q.empty?
             fs = q.peek.frame_size
             if size + fs <= pws
-              frames.push q.pop
+              frames.push q.deq
               size += fs
               frames_added += 1
             end

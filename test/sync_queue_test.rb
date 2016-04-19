@@ -7,9 +7,9 @@ class SyncQueueTest < Minitest::Test
     q = SyncQueue.new
     t = Thread.new do
       timeout(2) { assert_equal 1, q.peek }
-      timeout(2) { assert_equal 1, q.pop }
+      timeout(2) { assert_equal 1, q.deq }
     end
-    q.push 1
+    q.enq 1
     t.join
   end
 

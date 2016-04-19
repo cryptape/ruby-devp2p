@@ -25,18 +25,18 @@ module DEVp2p
       cmd_id 0
       decode_strict false # don't throw for additional list elements as mandated by EIP-8
 
-      structure([
-        ['version', RLP::Sedes.big_endian_int],
-        ['client_version_string', RLP::Sedes.binary],
-        ['capabilities', RLP::Sedes::CountableList.new(
+      structure(
+        version: RLP::Sedes.big_endian_int,
+        client_version_string: RLP::Sedes.binary,
+        capabilities: RLP::Sedes::CountableList.new(
           RLP::Sedes::List.new(elements: [RLP::Sedes.binary, RLP::Sedes.big_endian_int])
-        )],
-        ['listen_port', RLP::Sedes.big_endian_int],
-        ['remote_pubkey', RLP::Sedes.binary]
-      ])
+        ),
+        listen_port: RLP::Sedes.big_endian_int,
+        remote_pubkey: RLP::Sedes.binary
+      )
 
       def create(proto)
-        { version: proto.version,
+        { version: proto.class.version,
           client_version_string: proto.config['client_version_string'],
           capabilities: proto.peer.capabilities,
           listen_port: proto.config['p2p']['listen_port'],
@@ -67,7 +67,7 @@ module DEVp2p
     class Disconnect < Command
       cmd_id 1
 
-      structure [['reason', RLP::Sedes.big_endian_int]]
+      structure reason: RLP::Sedes.big_endian_int
 
       Reason = {
         disconnect_requested: 0,
@@ -95,7 +95,8 @@ module DEVp2p
         key ? key.to_s : "unknown (id:#{id})"
       end
 
-      def create(proto, reason=Reason[:client_quitting])
+      def create(proto, options={})
+        reason = options[:reason] || Reason[:client_quitting]
         raise ArgumentError, "unknown reason" unless reason_key(reason)
         logger.debug "send_disconnect", peer: proto.peer, reason: reason_name(reason)
 

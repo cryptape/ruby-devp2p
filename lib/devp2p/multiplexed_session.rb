@@ -15,7 +15,7 @@ module DEVp2p
       @handshake_finished = false
 
       ecc = Crypto::ECCx.new privkey
-      @rlpx_session = RLPxSession.new ecc, is_initiator
+      @rlpx_session = RLPxSession.new ecc, @is_initiator
 
       super(@rlpx_session)
 
@@ -51,7 +51,7 @@ module DEVp2p
 
       super(packet)
 
-      pop_all_frames.each {|f| @message_queue.push f.as_bytes }
+      pop_all_frames.each {|f| @message_queue.enq f.as_bytes }
     end
 
     private
@@ -60,7 +60,7 @@ module DEVp2p
       auth_msg = @rlpx_session.create_auth_message @remote_pubkey
       auth_msg_ct = @rlpx_session.encrypt_auth_message auth_msg
 
-      @message_queue.push auth_msg_ct
+      @message_queue.enq auth_msg_ct
     end
 
     def add_message_during_handshake(msg)
@@ -79,7 +79,7 @@ module DEVp2p
         auth_ack_msg = @rlpx_session.create_auth_ack_message
         auth_ack_msg_ct = @rlpx_session.encrypt_auth_ack_message auth_ack_msg
 
-        @message_queue.push auth_ack_msg_ct
+        @message_queue.enq auth_ack_msg_ct
 
         @rlpx_session.setup_cipher
         add_message_post_handshake(rest) unless rest.empty?
@@ -93,7 +93,7 @@ module DEVp2p
 
     def add_message_post_handshake(msg)
       decode(msg).each do |packet|
-        @packet_queue.push packet
+        @packet_queue.enq packet
       end
     end
 

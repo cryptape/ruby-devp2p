@@ -103,15 +103,15 @@ module DEVp2p
         end
 
         # get data, rlp encode, return packet
-        create = lambda do |*args, **kwargs|
-          res = instance.create(self, *args, **kwargs)
+        create = lambda do |*args|
+          res = instance.create(self, *args)
           payload = klass.encode_payload res
           Packet.new self.class.protocol_id, klass.cmd_id, payload
         end
 
         # create and send packet
-        send_packet = lambda do |*args, **kwargs|
-          packet = create.call *args, **kwargs
+        send_packet = lambda do |*args|
+          packet = create.call *args
           send_packet packet
         end
 

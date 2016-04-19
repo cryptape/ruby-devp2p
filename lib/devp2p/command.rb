@@ -7,21 +7,21 @@ module DEVp2p
     extend Configurable
     add_config(
       cmd_id: 0,
-      structure: [], # [[arg_name, RLP::Sedes.type], ...]
+      structure: {}, # {arg_name: RLP::Sedes.type}
       decode_strict: true
     )
 
     class <<self
       def encode_payload(data)
         if data.is_a?(Hash)
-          raise ArgumentError, 'structure must be array of arg names and sedes' unless structure.instance_of?(Array)
-          data = structure.map {|x| data[x[0]] }
+          raise ArgumentError, 'structure must be hash of arg names and sedes' unless structure.instance_of?(Hash)
+          data = structure.keys.map {|k| data[k] }
         end
 
         case structure
         when RLP::Sedes::CountableList
           RLP.encode data, structure
-        when Array
+        when Hash
           raise ArgumentError, 'structure and data length mismatch' unless data.size == structure.size
           RLP.encode data, sedes: RLP::Sedes::List.new(elements: sedes)
         else
@@ -33,14 +33,14 @@ module DEVp2p
         case structure
         when RLP::Sedes::CountableList
           decoder = structure
-        when Array
+        when Hash
           decoder = RLP::Sedes::List.new(elements: sedes, strict: decode_strict)
         else
           raise InvalidCommandStructure
         end
 
         data = RLP.decode rlp_data, sedes: decoder
-        data = data.each_with_index.map {|v, i| [structure[i][0], v] }.to_h if structure.instance_of?(Array)
+        data = structure.keys.zip(data).to_h if structure.is_a?(Hash)
         data
       rescue
         puts "error in decode: #{$!}"
@@ -50,22 +50,23 @@ module DEVp2p
       end
 
       def sedes
-        @sedes ||= structure.map {|x| x[1] }
+        @sedes ||= structure.values
       end
     end
 
     attr :receive_callbacks
 
     def initialize
-      raise InvalidCommandStructure unless [Array, RLP::Sedes::CountableList].include?(self.class.structure.class)
+      raise InvalidCommandStructure unless [Hash, RLP::Sedes::CountableList].any? {|c| self.class.structure.is_a?(c) }
       @receive_callbacks = []
     end
 
     # optionally implement create
-    def create(proto, *args, **kwargs)
+    def create(proto, *args)
+      options = args.last.is_a?(Hash) ? args.pop : {}
       raise ArgumentError, "proto must be protocol" unless proto.is_a?(BaseProtocol)
-      raise ArgumentError, "command structure mismatch" if !kwargs.empty? && self.class.structure.instance_of?(RLP::Sedes::CountableList)
-      kwargs.empty? ? args : kwargs
+      raise ArgumentError, "command structure mismatch" if !options.empty? && self.class.structure.instance_of?(RLP::Sedes::CountableList)
+      options.empty? ? args : options
     end
 
     # optionally implement receive

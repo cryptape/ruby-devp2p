@@ -7,9 +7,7 @@ require 'thread'
 # extentions like #peek.
 #
 class SyncQueue
-  #
-  # Creates a new queue.
-  #
+
   def initialize
     @que = []
     @que.taint          # enable tainted communication
@@ -19,10 +17,7 @@ class SyncQueue
     @cond = ConditionVariable.new
   end
 
-  #
-  # Pushes +obj+ to the queue.
-  #
-  def push(obj)
+  def enq(obj)
     Thread.handle_interrupt(StandardError => :on_blocking) do
       @mutex.synchronize do
         @que.push obj
@@ -30,23 +25,9 @@ class SyncQueue
       end
     end
   end
+  alias << enq
 
-  #
-  # Alias of push
-  #
-  alias << push
-
-  #
-  # Alias of push
-  #
-  alias enq push
-
-  #
-  # Retrieves data from the queue.  If the queue is empty, the calling thread is
-  # suspended until data is pushed onto the queue.  If +non_block+ is true, the
-  # thread isn't suspended, and an exception is raised.
-  #
-  def pop(non_block=false)
+  def deq(non_block=false)
     Thread.handle_interrupt(StandardError => :on_blocking) do
       @mutex.synchronize do
         while true
@@ -69,19 +50,7 @@ class SyncQueue
     end
   end
 
-  #
-  # Alias of pop
-  #
-  alias shift pop
-
-  #
-  # Alias of pop
-  #
-  alias deq pop
-
-  #
   # Same as pop except it will not remove the element from queue, just peek.
-  #
   def peek(non_block=false)
     Thread.handle_interrupt(StandardError => :on_blocking) do
       @mutex.synchronize do
@@ -105,35 +74,20 @@ class SyncQueue
     end
   end
 
-  #
-  # Returns +true+ if the queue is empty.
-  #
   def empty?
     @que.empty?
   end
 
-  #
-  # Removes all objects from the queue.
-  #
   def clear
     @que.clear
   end
 
-  #
-  # Returns the length of the queue.
-  #
   def length
     @que.length
   end
-
-  #
-  # Alias of length.
-  #
   alias size length
 
-  #
   # Returns the number of threads waiting on the queue.
-  #
   def num_waiting
     @num_waiting
   end
