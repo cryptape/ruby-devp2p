@@ -34,5 +34,6 @@ module DEVp2p
 
   require 'devp2p/kademlia/node'
   require 'devp2p/kademlia/k_bucket'
+  require 'devp2p/kademlia/routing_table'
 
 end

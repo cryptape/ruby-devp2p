@@ -16,5 +16,7 @@ module DEVp2p
   class InvalidMACError < StandardError; end
   class EncryptionError < StandardError; end
   class DecryptionError < StandardError; end
+  class KademliaRoutingError < StandardError; end
+  class KademliaNodeNotFound < StandardError; end
 
 end

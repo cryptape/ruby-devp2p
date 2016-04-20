@@ -24,6 +24,11 @@ module DEVp2p
         @last_updated = Time.now
       end
 
+      include Enumerable
+      def each(&block)
+        @nodes.each(&block)
+      end
+
       ##
       # If the sending node already exists in the recipient's k-bucket, the
       # recipient moves it to the tail of the list.
@@ -44,8 +49,10 @@ module DEVp2p
         if include?(node) # already exists
           delete node
           @nodes.push node
+          nil
         elsif size < K # add if fewer than k entries
           @nodes.push node
+          nil
         else # bucket is full
           head
         end
@@ -92,7 +99,12 @@ module DEVp2p
       end
 
       def should_split?
-        full? && depth % B != 0 && depth != ID_SIZE
+        full? && splitable?
+      end
+
+      def splitable?
+        d = depth
+        d % B != 0 && d != ID_SIZE
       end
 
       ##
