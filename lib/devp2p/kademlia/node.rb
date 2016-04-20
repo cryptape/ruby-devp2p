@@ -12,7 +12,7 @@ module DEVp2p
         raise ArgumentError, "invalid pubkey" unless pubkey.size == 64
 
         @id = Crypto.keccak256(pubkey)
-        raise "invalid node id" unless @id.size == ID_SIZE
+        raise "invalid node id" unless @id.size * 8 == ID_SIZE
 
         @id = Utils.big_endian_to_int @id
         @pubkey = pubkey

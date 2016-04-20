@@ -123,7 +123,7 @@ module DEVp2p
         # distribute nodes
         @nodes.each do |node|
           bucket = node.id <= split_id ? lower : upper
-          bucket.add_node node
+          bucket.add node
         end
 
         # distribute replacement nodes
@@ -166,6 +166,10 @@ module DEVp2p
 
       def include?(node)
         @nodes.include?(node)
+      end
+
+      def empty?
+        @nodes.empty?
       end
 
     end

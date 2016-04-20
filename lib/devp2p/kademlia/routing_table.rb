@@ -35,7 +35,7 @@ module DEVp2p
         raise ArgumentError, 'cannot add self' if node == @node
 
         bucket = bucket_by_node node
-        eviction_candidate = bucket.add_node node
+        eviction_candidate = bucket.add node
 
         if eviction_candidate # bucket is full
           # split if the bucket has the local node in its range or if the depth
@@ -70,6 +70,11 @@ module DEVp2p
       def buckets_by_id_distance(id)
         raise ArgumentError, 'id must be integer' unless id.is_a?(Integer)
         @buckets.sort_by {|b| b.id_distance(id) }
+      end
+
+      def buckets_by_distance(node)
+        raise ArgumentError, 'node must be Node' unless node.is_a?(Node)
+        buckets_by_id_distance(node.id)
       end
 
       def include?(node)
