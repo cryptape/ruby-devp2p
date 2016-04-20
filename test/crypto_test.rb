@@ -21,6 +21,12 @@ class CryptoTest < Minitest::Test
 
   def test_hmac_sha256
     assert_equal "rQ\xB8\xD0\xA5@\x88Q$\xD9\x7F'\xC5\xFC[\x84}\x87E6!\xF4#\xE7+\x9D\xE2\xA2\xE6\xE0\x00^", Crypto.hmac_sha256("\x01"*32, 'ether')
+
+    k_mac = Utils.decode_hex("07a4b6dfa06369a570f2dcba2f11a18f")
+    indata = Utils.decode_hex("4dcb92ed4fc67fe86832")
+    expected = Utils.decode_hex("c90b62b1a673b47df8e395e671a68bfa68070d6e2ef039598bb829398b89b9a9")
+    hmac = Crypto.hmac_sha256(k_mac, indata)
+    assert_equal expected, hmac
   end
 
   def test_ecdsa_sign
