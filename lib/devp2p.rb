@@ -18,6 +18,8 @@ require 'devp2p/configurable'
 require 'devp2p/utils'
 require 'devp2p/exception'
 
+require 'devp2p/kademlia'
+
 require 'devp2p/sync_queue'
 
 require 'devp2p/packet'

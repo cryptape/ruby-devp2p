@@ -36,6 +36,10 @@ module DEVp2p
       lpad x, BYTE_ZERO, l
     end
 
+    def bpad(x, l)
+      lpad x.to_s(2), '0', l
+    end
+
     def rzpad16(data)
       extra = data.size % 16
       data += "\x00" * (16 - extra) if extra != 0
