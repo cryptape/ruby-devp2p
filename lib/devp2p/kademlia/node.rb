@@ -6,6 +6,7 @@ module DEVp2p
     class Node
 
       attr :id, :pubkey
+      attr_accessor :address
 
       def initialize(pubkey)
         raise ArgumentError, "invalid pubkey" unless pubkey.size == 64
@@ -30,7 +31,7 @@ module DEVp2p
       end
 
       def to_s
-        "<Node(#{Utils.encode_hex pubkey[0,4]})>"
+        "<Node(#{Utils.encode_hex pubkey[0,8]})>"
       end
       alias inspect to_s
     end

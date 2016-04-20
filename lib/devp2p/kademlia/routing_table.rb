@@ -80,6 +80,10 @@ module DEVp2p
         @buckets.map(&:size).reduce(0, &:+)
       end
 
+      def buckets_count
+        @buckets.size
+      end
+
       ##
       # sorting by bucket.midpoint does not work in edge cases, buld a short
       # list of `k * 2` nodes and sort and shorten it.

@@ -58,6 +58,10 @@ module DEVp2p
         end
       end
 
+      def add_replacement(node)
+        @replacement_cache.push node
+      end
+
       def delete(node)
         return unless include?(node)
         @nodes.delete node
@@ -125,7 +129,7 @@ module DEVp2p
         # distribute replacement nodes
         @replacement_cache.each do |node|
           bucket = node.id <= split_id ? lower : upper
-          bucket.add_replacement_node node
+          bucket.add_replacement node
         end
 
         return lower, upper
