@@ -5,6 +5,8 @@ module DEVp2p
 
     class Protocol
 
+      attr :node, :wire, :routing
+
       def initialize(node, wire)
         raise ArgumentError, 'node must be Node' unless node.is_a?(Node)
         raise ArgumentError, 'wire must be WireInterface' unless wire.is_a?(WireInterface)
@@ -78,14 +80,14 @@ module DEVp2p
         end
 
         # check for timed out pings and eventually evict them
-        @expected_pongs.each do |pid, (timeout, _node, replacement)|
+        @expected_pongs.each do |_pingid, (timeout, _node, replacement)|
           if Time.now > timeout
             logger.debug "deleting timeout node", remoteid: _node, pingid: Utils.encode_hex(_pingid)[0,8]
 
             @deleted_pingids[_pingid] = true
             @expected_pongs.delete _pingid
 
-            @routing.remove _node
+            @routing.delete _node
 
             if replacement
               logger.debug "adding replacement", remoteid: replacement
@@ -141,6 +143,7 @@ module DEVp2p
 
       # FIXME: amplification attack (need to ping pong ping pong first)
       def find_node(targetid, via_node=nil)
+        raise ArgumentError, 'targetid must be Integer' unless targetid.is_a?(Integer)
         raise ArgumentError, 'via_node must be nil or Node' unless via_node.nil? || via_node.is_a?(Node)
 
         @find_requests[targetid] = Time.now + REQUEST_TIMEOUT

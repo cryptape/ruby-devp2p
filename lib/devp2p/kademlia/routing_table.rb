@@ -5,6 +5,8 @@ module DEVp2p
 
     class RoutingTable
 
+      attr :node
+
       def initialize(node)
         @node = node
         @buckets = [KBucket.new(0, MAX_NODE_ID)]
