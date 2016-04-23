@@ -10,6 +10,8 @@ module DEVp2p
 
   TT16 = 2**16
   TT256 = 2**256
+
+  NODE_URI_SCHEME = 'enode://'.freeze
 end
 
 require 'devp2p/version'

@@ -67,5 +67,21 @@ module DEVp2p
       config
     end
 
+    def host_port_pubkey_from_uri(uri)
+      raise ArgumentError, 'invalid uri' unless uri =~ /\A#{NODE_URI_SCHEME}.+@.+:.+$/
+
+      pubkey_hex, ip_port = uti[NODE_URI_SCHEME.size..-1].split('@')
+      raise ArgumentError, 'invalid pubkey length' unless pubkey.size == 2 * Kademlia::PUBKEY_SIZE / 8
+
+      ip, port = ip_port.split(':')
+      return ip, port, Utils.decode_hex(pubkey_hex)
+    end
+
+    def host_port_pubkey_to_uri(host, port, pubkey)
+      raise ArgumentError, 'invalid pubkey length' unless pubkey.size == Kademlia::PUBKEY_SIZE / 8
+
+      "#{NODE_URI_SCHEME}#{encode_hex pubkey}@#{host}:#{port}"
+    end
+
   end
 end
