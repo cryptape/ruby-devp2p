@@ -30,6 +30,13 @@ module DEVp2p
     PUBKEY_SIZE = 512
     ID_SIZE = 256
     MAX_NODE_ID = 2 ** ID_SIZE - 1
+
+    class <<self
+      def random_nodeid
+        SecureRandom.random_number(MAX_NODE_ID+1)
+      end
+    end
+
   end
 
   require 'devp2p/kademlia/node'

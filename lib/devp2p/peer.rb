@@ -7,6 +7,8 @@ module DEVp2p
 
     DUMB_REMOTE_TIMEOUT = 10.0
 
+    attr :safe_to_read
+
     def initialize(peermanager, connection, remote_pubkey=nil)
       @peermanager = peermanager
       @connection = connection
@@ -30,7 +32,7 @@ module DEVp2p
 
       # assure, we don't get messages while replies are not read
       @safe_to_read = Celluloid::Condition.new
-      @safe_to_read.broadcast
+      safe_to_read.broadcast
 
       # stop peer if hello not received in DUMB_REMOTE_TIMEOUT
       after(DUMB_REMOTE_TIMEOUT) { check_if_dumb_remote }
@@ -159,12 +161,12 @@ module DEVp2p
     def send_data(data)
       return if data.nil? || data.empty?
 
-      # FIXME: TODO: @safe_to_read.clear
+      # FIXME: TODO: safe_to_read.clear
 
       @connection.sendall data
       logger.debug "wrote data", size: data.size, ts: Time.now
 
-      @safe_to_read.broadcast
+      safe_to_read.broadcast
     rescue # TODO: socket error and timeout error
       logger.debug "write error #{$!}"
       report_error "write error #{$!}"
@@ -172,7 +174,7 @@ module DEVp2p
     end
 
     def stop
-      if !@stopped
+      if !stopped?
         @stopped = true
         logger.debug "stopped", peer: self
 
@@ -180,6 +182,10 @@ module DEVp2p
         @peermanager.peers.delete self
         terminate
       end
+    end
+
+    def stopped?
+      @stopped
     end
 
     private
@@ -234,13 +240,13 @@ module DEVp2p
     end
 
     def run_egress_message
-      while !@stopped
+      while !stopped?
         send_data @mux.get_message
       end
     end
 
     def run_decoded_packets
-      while !@stopped
+      while !stopped?
         handle_packet @mux.get_packet # get_packet blocks
       end
     end
@@ -252,8 +258,8 @@ module DEVp2p
       decode_packet_future = future { run_decoded_packets }
       egress_message_future = future { run_egress_message }
 
-      while !@stopped
-        @safe_to_read.wait
+      while !stopped?
+        safe_to_read.wait
 
         begin
         rescue # TODO: socket error
