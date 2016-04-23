@@ -35,6 +35,8 @@ require 'devp2p/base_protocol'
 require 'devp2p/connection_monitor'
 require 'devp2p/p2p_protocol'
 
+require 'devp2p/peer'
+
 require 'devp2p/base_service'
 require 'devp2p/wired_service'
 

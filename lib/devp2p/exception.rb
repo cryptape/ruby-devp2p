@@ -5,6 +5,7 @@ module DEVp2p
   class MissingRequiredServiceError < StandardError; end
   class InvalidCommandStructure < StandardError; end
   class DuplicatedCommand < StandardError; end
+  class UnknownCommandError < StandardError; end
   class FrameError < StandardError; end
   class MultiplexerError < StandardError; end
   class RLPxSessionError < StandardError; end
@@ -18,5 +19,6 @@ module DEVp2p
   class DecryptionError < StandardError; end
   class KademliaRoutingError < StandardError; end
   class KademliaNodeNotFound < StandardError; end
+  class PeerError < StandardError; end
 
 end

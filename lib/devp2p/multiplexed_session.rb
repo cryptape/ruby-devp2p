@@ -22,6 +22,14 @@ module DEVp2p
       send_init_msg if @is_initiator
     end
 
+    def get_message
+      @message_queue.deq
+    end
+
+    def get_packet
+      @packet_queue.deq
+    end
+
     def ready?
       @rlpx_session.ready?
     end
