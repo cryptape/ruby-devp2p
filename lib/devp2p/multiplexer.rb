@@ -67,9 +67,9 @@ module DEVp2p
     # pws = protocol_window_size = window_size / active_protocol_count
     def protocol_window_size(id=nil)
       if id && !active_protocol?(id)
-        s = self.class.max_window_size / (1 + num_active_protocols)
+        s = max_window_size / (1 + num_active_protocols)
       else
-        s = self.class.max_window_size / [1, num_active_protocols].max
+        s = max_window_size / [1, num_active_protocols].max
       end
 
       s - s % 16 # should be a multiple of padding size # FIXME: 16 should be constant
@@ -114,7 +114,7 @@ module DEVp2p
 
       if packet.prioritize
         raise FrameError, "invalid priority packet frames" unless frames.size == 1
-        raise FrameError, "frame too large for priority packet" unless frames[0].frame_size <= self.class.max_priority_frame_size
+        raise FrameError, "frame too large for priority packet" unless frames[0].frame_size <= max_priority_frame_size
 
         queues[:priority].enq frames[0]
       elsif frames.size == 1

@@ -51,7 +51,7 @@ module DEVp2p
     def initialize(protocol_id, cmd_id, payload, sequence_id, window_size, is_chunked_n=false, frames=nil, frame_cipher=nil)
       raise ArgumentError, 'invalid protocol_id' unless protocol_id < TT16
       raise ArgumentError, 'invalid sequence_id' unless sequence_id.nil? || sequence_id < TT16
-      raise ArgumentError, 'invalid window_size' unless window_size % self.class.padding == 0
+      raise ArgumentError, 'invalid window_size' unless window_size % padding == 0
       raise ArgumentError, 'invalid cmd_id' unless cmd_id < 256
 
       @protocol_id = protocol_id
@@ -92,7 +92,7 @@ module DEVp2p
 
     def frame_size
       # header16 || mac16 || dataN + [padding] || mac16
-      self.class.header_size + self.class.mac_size + body_size(true) + self.class.mac_size
+      header_size + mac_size + body_size(true) + mac_size
     end
 
     ##
@@ -136,15 +136,15 @@ module DEVp2p
         l.push sequence_id
       end
 
-      header_data = RLP.encode l, sedes: self.class.header_sedes
-      raise FrameError, 'invalid rlp' unless l == RLP.decode(header_data, sedes: self.class.header_sedes, strict: false)
+      header_data = RLP.encode l, sedes: header_sedes
+      raise FrameError, 'invalid rlp' unless l == RLP.decode(header_data, sedes: header_sedes, strict: false)
 
       bs = body_size
       raise FrameError, 'invalid body size' unless bs < 256**3
 
       header = Frame.encode_body_size(body_size) + header_data
       header = Utils.rzpad16 header
-      raise FrameError, 'invalid header' unless header.size == self.class.header_size
+      raise FrameError, 'invalid header' unless header.size == header_size
 
       header
     end
@@ -174,12 +174,12 @@ module DEVp2p
         e
       else
         h = header
-        raise FrameError, 'invalid header size' unless h.size == self.class.header_size
+        raise FrameError, 'invalid header size' unless h.size == header_size
 
         b = body
         raise FrameError, 'invalid body size' unless b.size == body_size(true)
 
-        dummy_mac = "\x00" * self.class.mac_size
+        dummy_mac = "\x00" * mac_size
         r = h + dummy_mac + b + dummy_mac
         raise FrameError, 'invalid frame' unless r.size == frame_size
 

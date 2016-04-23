@@ -32,17 +32,16 @@ module DEVp2p
       end
     end
 
-    attr :app, :name
+    attr :app
 
     def initialize(app)
       @app = app
 
-      @name = self.class.name
-      @config = Utils.update_config_with_defaults app.config, self.class.default_config
+      @config = Utils.update_config_with_defaults app.config, default_config
       @stopped = false
 
       available_services = app.services.each_value.map(&:class)
-      self.class.required_services.each do |r|
+      required_services.each do |r|
         raise MissingRequiredServiceError, "require service #{r}" unless available_services.include?(r)
       end
     end

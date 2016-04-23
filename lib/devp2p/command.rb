@@ -57,7 +57,7 @@ module DEVp2p
     attr :receive_callbacks
 
     def initialize
-      raise InvalidCommandStructure unless [Hash, RLP::Sedes::CountableList].any? {|c| self.class.structure.is_a?(c) }
+      raise InvalidCommandStructure unless [Hash, RLP::Sedes::CountableList].any? {|c| structure.is_a?(c) }
       @receive_callbacks = []
     end
 
@@ -65,13 +65,13 @@ module DEVp2p
     def create(proto, *args)
       options = args.last.is_a?(Hash) ? args.pop : {}
       raise ArgumentError, "proto must be protocol" unless proto.is_a?(BaseProtocol)
-      raise ArgumentError, "command structure mismatch" if !options.empty? && self.class.structure.instance_of?(RLP::Sedes::CountableList)
+      raise ArgumentError, "command structure mismatch" if !options.empty? && structure.instance_of?(RLP::Sedes::CountableList)
       options.empty? ? args : options
     end
 
     # optionally implement receive
     def receive(proto, data)
-      if self.class.structure.instance_of?(RLP::Sedes::CountableList)
+      if structure.instance_of?(RLP::Sedes::CountableList)
         receive_callbacks.each {|cb| cb.call(proto, data) }
       else
         receive_callbacks.each {|cb| cb.call(proto, **data) }

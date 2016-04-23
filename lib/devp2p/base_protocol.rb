@@ -79,7 +79,7 @@ module DEVp2p
     end
 
     def to_s
-      "<#{self.class.name} #{peer}>"
+      "<#{name} #{peer}>"
     end
     alias :inspect :to_s
 
@@ -90,7 +90,7 @@ module DEVp2p
     end
 
     def setup
-      klasses = self.class.commands
+      klasses = commands
       raise DuplicatedCommand unless klasses.map(&:cmd_id).uniq.size == klasses.size
 
       klasses.each do |klass|
@@ -106,7 +106,7 @@ module DEVp2p
         create = lambda do |*args|
           res = instance.create(self, *args)
           payload = klass.encode_payload res
-          Packet.new self.class.protocol_id, klass.cmd_id, payload
+          Packet.new protocol_id, klass.cmd_id, payload
         end
 
         # create and send packet

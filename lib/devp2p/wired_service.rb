@@ -9,7 +9,7 @@ module DEVp2p
   #     add WiredService.wire_protocol to announced capabilities
   #     if a peer with the same protocol is connected
   #       a WiredService.wire_protocol instance is created
-  #       with instances of Peer and WiredService
+  #         with instances of Peer and WiredService
   #       WiredService.wire_protocol(Peer.new, WiredService.new)
   #
   class WiredService < BaseService

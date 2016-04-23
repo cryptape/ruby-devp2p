@@ -223,7 +223,7 @@ module DEVp2p
     end
 
     def create_eip8_auth_ack_message(ephemeral_pubkey, nonce, version)
-      data = RLP.encode [ephemeral_pubkey, nonce, version], sedes: self.class.eip8_ack_sedes
+      data = RLP.encode [ephemeral_pubkey, nonce, version], sedes: eip8_ack_sedes
       pad = SecureRandom.random_bytes(SecureRandom.random_number(151)+100) # (100..150) random bytes
       "#{data}#{pad}"
     end
@@ -387,7 +387,7 @@ module DEVp2p
                   raise AuthenticationError, $!
                 end
 
-      values = RLP.decode message, sedes: self.class.eip8_auth_sedes, strict: false
+      values = RLP.decode message, sedes: eip8_auth_sedes, strict: false
       raise RLPxSessionError, 'invalid values size' unless values.size >= 4
 
       [size] + values[0,4]
@@ -424,7 +424,7 @@ module DEVp2p
                 rescue
                   raise AuthenticationError, $!
                 end
-      values = RLP.decode message, sedes: self.class.eip8_ack_sedes, strict: false
+      values = RLP.decode message, sedes: eip8_ack_sedes, strict: false
       raise RLPxSessionError, 'invalid values length' unless values.size >= 3
 
       [size] + values[0,3]

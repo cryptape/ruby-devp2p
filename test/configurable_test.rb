@@ -35,4 +35,9 @@ class ConfigurableTest < Minitest::Test
     assert_equal false, Daughter.parent
   end
 
+  def test_instance_helpers
+    assert_equal Mom.name, Mom.new.name
+    assert_equal Mom.gender, Mom.new.gender
+  end
+
 end
