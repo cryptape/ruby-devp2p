@@ -23,6 +23,11 @@ module DEVp2p
       RLP::Sedes.big_endian_int.deserialize s.sub(/\A(\x00)+/, '')
     end
 
+    # 4 bytes big endian integer
+    def int_to_big_endian4(i)
+      [i].pack('I>')
+    end
+
     def ceil16(x)
       x % 16 == 0 ? x : (x + 16 - (x%16))
     end

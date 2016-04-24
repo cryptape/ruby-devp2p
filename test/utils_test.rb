@@ -4,6 +4,10 @@ require 'test_helper'
 class UtilsTest < Minitest::Test
   include DEVp2p
 
+  def test_int_to_big_endian4
+    assert_equal "\x00\x00\x00\x01", Utils.int_to_big_endian4(1)
+  end
+
   def test_sxor
     assert_equal 'PPP', Utils.sxor('abc', '123')
   end

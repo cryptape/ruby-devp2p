@@ -21,6 +21,7 @@ require 'devp2p/utils'
 require 'devp2p/exception'
 
 require 'devp2p/kademlia'
+require 'devp2p/discovery'
 
 require 'devp2p/sync_queue'
 
