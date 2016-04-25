@@ -70,7 +70,7 @@ module DEVp2p
             logger.debug "surprising pong was deleted"
           else
             @expected_pongs.each_key do |key|
-              if key =~ /#{node.pubkey}\z/
+              if key.end_with?(node.pubkey)
                 logger.debug "waiting for ping from node, but echo mismatch", node: node, expected_echo: Utils.encode_hex(key[0,8]), received_echo: Utils.encode_hex(pingid[0,8])
               end
             end

@@ -188,6 +188,48 @@ class DiscoveryAddressTest < Minitest::Test
     alice_app.stop
   end
 
+  def test_bootstrap_udp
+    Celluloid.shutdown rescue nil
+    Celluloid.boot
+
+    # set timeout to something more tolerant
+    DEVp2p::Kademlia.const_set :REQUEST_TIMEOUT, 10000.0
+
+    # startup num_apps udp server and node applications
+    num_apps = 6
+    apps = num_apps.times.map do |i|
+      app = get_app 30002 + i, "app#{i}"
+      app.start
+      app
+    end
+
+    sleep 0.1
+
+    boot_node = get_app_node apps[0]
+    assert boot_node.address
+
+    sleep_delay = 0.1 # we need to wait for the packets to be delivered
+    apps[1..-1].each do |app|
+      #puts "test bootstrap from=#{get_app_node(app)} to=#{boot_node}"
+      get_app_kademlia(app).bootstrap [boot_node]
+      sleep sleep_delay
+    end
+
+    apps[1..-1].each do |app|
+      #puts "test find_node from=#{get_app_node(app)}"
+      get_app_kademlia(app).find_node get_app_node(app).id
+      sleep sleep_delay
+    end
+
+    # now all nodes should know each other
+    apps.each_with_index do |app, i|
+      num = get_app_kademlia(app).routing.size
+      assert num >= num_apps - 1
+    end
+
+    apps.each(&:stop)
+  end
+
   private
 
   def get_app(port, seed)
@@ -208,6 +250,14 @@ class DiscoveryAddressTest < Minitest::Test
     DEVp2p::BaseApp.new(config).tap do |app|
       Transport.register_with_app app
     end
+  end
+
+  def get_app_kademlia(app)
+    ivget(app.services.discovery.protocol, :@kademlia)
+  end
+
+  def get_app_node(app)
+    get_app_kademlia(app).node
   end
 
 end
