@@ -206,7 +206,7 @@ class DiscoveryAddressTest < Minitest::Test
     }
 
     DEVp2p::BaseApp.new(config).tap do |app|
-      Service.register_with_app app
+      Transport.register_with_app app
     end
   end
 

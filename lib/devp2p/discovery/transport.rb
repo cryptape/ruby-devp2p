@@ -6,9 +6,7 @@ module DEVp2p
     ##
     # Persist the list of known nodes with their reputation.
     #
-    class Service < BaseService
-      include ProtocolTransport
-
+    class Transport < BaseService
       name 'discovery'
 
       default_config(

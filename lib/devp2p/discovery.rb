@@ -113,7 +113,6 @@
 
 require 'devp2p/discovery/address'
 require 'devp2p/discovery/node'
-require 'devp2p/discovery/protocol_transport'
 require 'devp2p/discovery/kademlia_protocol_adapter'
 require 'devp2p/discovery/protocol'
-require 'devp2p/discovery/service'
+require 'devp2p/discovery/transport'
