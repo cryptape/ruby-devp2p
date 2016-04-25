@@ -1,6 +1,7 @@
 # -*- encoding : ascii-8bit -*-
 
 require 'ipaddr'
+require 'resolv'
 
 module DEVp2p
   module Discovery
@@ -30,10 +31,11 @@ module DEVp2p
         end
 
         begin
-          @ip = IPAddr.new ip
-        rescue
-          # TODO: Possibly a hostname, resolve it to ip?
-          raise $!
+          @ip = from_binary ? IPAddr.new_ntoh(ip) : IPAddr.new(ip)
+        rescue IPAddr::InvalidAddressError => e
+          ips = Resolv.getaddresses(ip).sort {|addr| addr =~ /:/ ? 1 : 0 } # use ipv4 first
+          raise e if ips.empty?
+          @ip = ips[0]
         end
       end
 
