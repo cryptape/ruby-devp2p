@@ -175,7 +175,7 @@ module DEVp2p
       end
 
       def send_message(node, message)
-        raise ArgumentError, 'node must have address' if node.address.nil? || node.address.empty?
+        raise ArgumentError, 'node must have address' unless node.address
         logger.debug ">>> message", address: node.address
         @transport.send_message node.address, message
       end
@@ -186,7 +186,7 @@ module DEVp2p
 
         logger.debug ">>> ping", remoteid: node
 
-        version = RLP.sedes.big_endian_int.serialize VERSION
+        version = RLP::Sedes.big_endian_int.serialize VERSION
         payload = [
           version,
           Address.new(ip, udp_port, tcp_port).to_endpoint,
@@ -236,7 +236,7 @@ module DEVp2p
         end
 
         raise InvalidPayloadError unless payload[0].size == 3
-        raise InvalidPayloadError unless [4,16].include?(payload[0][0])
+        raise InvalidPayloadError unless [4,16].include?(payload[0][0].size)
 
         my_address = Address.from_endpoint *payload[0]
         echoed = payload[1]

@@ -1,7 +1,7 @@
 # -*- encoding : ascii-8bit -*-
 
 require 'block_logger'
-require 'celluloid'
+require 'celluloid/io'
 
 require 'rlp'
 

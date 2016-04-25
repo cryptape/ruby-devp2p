@@ -21,11 +21,13 @@ module DEVp2p
         }
       )
 
+      attr :protocol
+
       def initialize(app)
         super(app)
         logger.info "Discovery service init"
 
-        @server = nil # will be DatagramServer
+        @server = nil # will be UDPSocket
         @protocol = Protocol.new app, self
       end
 
@@ -40,8 +42,9 @@ module DEVp2p
         logger.debug "sending", size: message.size, to: address
 
         begin
-          @server.sendto message, [address.ip, address.udp_port]
-        rescue # TODO: socket.error
+          @server.send message, 0, address.ip, address.udp_port
+        rescue
+          # should never reach here? udp has no connection!
           logger.error "udp write error", error: $!
           logger.error "waiting for recovery"
           sleep 5
@@ -61,12 +64,8 @@ module DEVp2p
 
         logger.info "starting listener", port: port, host: ip
 
-        @server = DatagramServer.new([ip, port]) do |message, ip_port|
-          logger.debug "handling packet", address: ip_port, size: message.size
-          raise ArgumentError, 'invalid ip_port' unless ip_port.size == 2
-          receive_message Address.new(*ip_port), message
-        end
-        @server.start
+        @server = UDPSocket.new
+        @server.bind ip, port
 
         super
 
@@ -77,14 +76,29 @@ module DEVp2p
 
       def run
         logger.debug "run called"
-        cond = Celluloid::Condition.new
-        cond.wait
+
+        maxlen = Multiplexer.max_window_size * 2
+        loop do
+          break if stopped?
+          message, info = @server.recvfrom maxlen
+          handle_packet message, info[3], info[1]
+        end
       end
 
       def stop
         logger.info "stopping discovery"
-        @server.stop
         super
+      end
+
+      private
+
+      def logger
+        @logger ||= Logger.new 'p2p.discovery'
+      end
+
+      def handle_packet(message, ip, port)
+        logger.debug "handling packet", ip: ip, port: port, size: message.size
+        receive_message Address.new(ip, port), message
       end
 
     end
