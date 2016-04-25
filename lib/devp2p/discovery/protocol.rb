@@ -44,6 +44,10 @@ module DEVp2p
         logger.info "starting discovery proto", enode: uri
       end
 
+      def bootstrap(nodes)
+        @kademlia.bootstrap(nodes) unless nodes.empty?
+      end
+
       ##
       # return node or create new, update address if supplied
       #
@@ -146,7 +150,7 @@ module DEVp2p
         return remote_pubkey, cmd_id, payload, mdc
       end
 
-      def receive(address, message)
+      def receive_message(address, message)
         logger.debug "<<< message", address: address
         raise ArgumentError, 'address must be Address' unless address.instance_of?(Address)
 

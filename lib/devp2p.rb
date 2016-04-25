@@ -20,6 +20,9 @@ require 'devp2p/configurable'
 require 'devp2p/utils'
 require 'devp2p/exception'
 
+require 'devp2p/base_service'
+require 'devp2p/wired_service'
+
 require 'devp2p/kademlia'
 require 'devp2p/discovery'
 
@@ -37,9 +40,6 @@ require 'devp2p/command'
 require 'devp2p/base_protocol'
 require 'devp2p/connection_monitor'
 require 'devp2p/p2p_protocol'
-
-require 'devp2p/base_service'
-require 'devp2p/wired_service'
 
 require 'devp2p/peer'
 require 'devp2p/peer_errors'

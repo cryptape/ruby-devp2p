@@ -60,12 +60,6 @@ module DEVp2p
         {ip: ip, udp_port: udp_port, tcp_port: tcp_port}
       end
 
-      ##
-      # struct Endpoint
-      #   unsigned address; // BE encoded 32-bit or 128-bit unsigned (layer3 address; size determins ipv4 vs ipv6)
-      #   unsigned udpPort; // BE encoded 16-bit unsigned
-      #   unsigned tcpPort; // BE encoded 16-bit unsigned
-      #
       def to_b
         [@ip.hton, enc_port(udp_port), enc_port(tcp_port)]
       end

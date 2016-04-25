@@ -3,7 +3,7 @@
 module DEVp2p
   module Discovery
 
-    class ProtocolTransport
+    module ProtocolTransport
 
       def send_message(address, message)
         raise ArgumentError, 'address must be Address' unless address.is_a?(Address)
