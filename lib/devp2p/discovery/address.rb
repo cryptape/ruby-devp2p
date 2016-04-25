@@ -9,7 +9,7 @@ module DEVp2p
 
       attr :udp_port, :tcp_port
 
-      def self.from_binary(ip, udp_port, tcp_port="\x00\x00")
+      def self.from_endpoint(ip, udp_port, tcp_port="\x00\x00")
         new(ip, udp_port, tcp_port, true)
       end
 

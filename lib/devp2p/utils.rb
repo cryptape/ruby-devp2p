@@ -51,6 +51,10 @@ module DEVp2p
       data
     end
 
+    def zpad_int(i, l=32)
+      Utils.zpad Utils.int_to_big_endian(i), l
+    end
+
     ##
     # String xor.
     #

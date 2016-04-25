@@ -15,10 +15,15 @@ module DEVp2p
   class InvalidKeyError < StandardError; end
   class InvalidSignatureError < StandardError; end
   class InvalidMACError < StandardError; end
+  class InvalidPayloadError < StandardError; end
   class EncryptionError < StandardError; end
   class DecryptionError < StandardError; end
   class KademliaRoutingError < StandardError; end
   class KademliaNodeNotFound < StandardError; end
   class PeerError < StandardError; end
+
+  class DefectiveMessage < StandardError; end
+  class PacketExpired < DefectiveMessage; end
+  class InvalidMessageMAC < DefectiveMessage; end
 
 end
