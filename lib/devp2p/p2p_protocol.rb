@@ -134,7 +134,6 @@ module DEVp2p
     protocol_id 0
     version 4
     max_cmd_id 15
-    commands [Ping, Pong, Hello, Disconnect]
 
     attr :config
 

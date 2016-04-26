@@ -28,8 +28,7 @@ module DEVp2p
       name: '',
       protocol_id: 0,
       version: 0,
-      max_cmd_id: 0, # reserved cmd space
-      commands: []
+      max_cmd_id: 0 # reserved cmd space
     )
 
     attr :peer, :service
@@ -90,7 +89,12 @@ module DEVp2p
     end
 
     def setup
-      klasses = commands
+      klasses = []
+      self.class.constants.each do |name|
+        c = self.class.const_get name
+        klasses.push(c) if c.instance_of?(Class) && c < Command
+      end
+
       raise DuplicatedCommand unless klasses.map(&:cmd_id).uniq.size == klasses.size
 
       klasses.each do |klass|
