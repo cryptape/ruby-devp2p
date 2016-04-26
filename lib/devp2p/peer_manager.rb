@@ -13,7 +13,7 @@ module DEVp2p
   #
   class PeerManager < WiredService
     include Celluloid::IO
-    finalizer :stop
+    finalizer :cleanup
 
     name 'peermanager'
     required_services []
@@ -78,6 +78,11 @@ module DEVp2p
         break if stopped?
         async.handle_connection @server.accept
       end
+    end
+
+    def add(peer)
+      @peers.push peer
+      link peer
     end
 
     def delete(peer)
@@ -197,9 +202,10 @@ module DEVp2p
     def start_peer(socket, remote_pubkey=nil)
       peer = Peer.new self, socket, remote_pubkey
       logger.debug "created new peer", peer: peer, fileno: socket.to_io.fileno
-      @peers.push peer
 
+      add peer
       peer.start
+
       logger.debug "peer started", peer: peer, fileno: socket.to_io.fileno
       raise PeerError, 'connection closed' if socket.closed?
 
@@ -250,6 +256,10 @@ module DEVp2p
       # TODO: ???
       cond = Celluloid::Condition.new
       cond.wait
+    end
+
+    def cleanup
+      @server.close if @server && !@server.closed?
     end
 
   end

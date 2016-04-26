@@ -12,7 +12,7 @@ module DEVp2p
   #
   class BaseService
     include Celluloid
-    finalizer :stop
+    #finalizer :stop
 
     extend Configurable
     add_config(

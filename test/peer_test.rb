@@ -12,8 +12,8 @@ class PeerTest < Minitest::Test
 
     a_app, b_app = get_connected_apps
 
-    #a_app.stop
-    #b_app.stop
+    a_app.stop
+    b_app.stop
   end
 
   private
