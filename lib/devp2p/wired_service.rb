@@ -18,11 +18,11 @@ module DEVp2p
     attr_accessor :wire_protocol
 
     def on_wire_protocol_start(proto)
-      raise ArgumentError, "argument is not a protocol" unless proto.instance_of?(BaseProtocol)
+      raise ArgumentError, "argument is not a protocol" unless proto.is_a?(BaseProtocol)
     end
 
     def on_wire_protocol_stop(proto)
-      raise ArgumentError, "argument is not a protocol" unless proto.instance_of?(BaseProtocol)
+      raise ArgumentError, "argument is not a protocol" unless proto.is_a?(BaseProtocol)
     end
 
   end

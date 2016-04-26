@@ -33,7 +33,7 @@ module DEVp2p
       end
     end
 
-    attr :app
+    attr :app, :config
 
     def initialize(app)
       @app = app

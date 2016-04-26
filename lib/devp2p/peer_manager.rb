@@ -12,6 +12,9 @@ module DEVp2p
   #       connect closest node
   #
   class PeerManager < WiredService
+    include Celluloid::IO
+    finalizer :stop
+
     name 'peermanager'
     required_services []
 
@@ -34,6 +37,8 @@ module DEVp2p
       @peers = []
       @errors = @config[:log_disconnects] ? PeerErrors.new : PeerErrorsBase.new
 
+      @wire_protocol = P2PProtocol
+
       # setup nodeid based on privkey
       unless @config[:p2p].has_key?(:id)
         @config[:node][:id] = Crypto.privtopub Utils.decode_hex(@config[:node][:privkey_hex])
@@ -43,8 +48,40 @@ module DEVp2p
       @connect_loop_delay = 0.1
       @discovery_delay = 0.5
 
-      @listen_addr = [@config[:p2p][:listen_host], @config[:p2p][:listen_port]]
-      @server = StreamServer.new @listen_addr, handle: :on_new_connection # FIXME
+      @host = @config[:p2p][:listen_host]
+      @port = @config[:p2p][:listen_port]
+    end
+
+    def start
+      logger.info "starting peermanager"
+
+      logger.info "starting listener", host: @host, port: @port
+      @server = TCPServer.new @host, @port
+
+      super
+      bootstrap
+
+      after(0.000001) { discovery_loop }
+    end
+
+    def stop
+      logger.info "stopping peermanager"
+
+      @server.close if @server
+      @peers.each(&:stop)
+
+      super
+    end
+
+    def run
+      loop do
+        break if stopped?
+        async.handle_connection @server.accept
+      end
+    end
+
+    def delete(peer)
+      @peers.delete peer
     end
 
     def on_hello_received(proto, version, client_version_string, capabilities, listen_port, remote_pubkey)
@@ -94,42 +131,22 @@ module DEVp2p
     #
     # Passing the optional timeout parameter will set the timeout.
     #
-    def connect(address, remote_pubkey)
-      connection = create_connection address, @connect_timeout
-      logger.debug "connecting to", connection: connection
+    def connect(host, port, remote_pubkey)
+      socket = create_connection host, port, @connect_timeout
+      logger.debug "connecting to", peer: socket.peeraddr
 
-      start_peer connection, address, remote_pubkey
+      start_peer socket, remote_pubkey
       true
-    rescue # TODO: socket.timeout
+    rescue Errno::ETIMEDOUT
+      address = "#{host}:#{port}"
       logger.debug "connection timeout", address: address, timeout: @connect_timeout
       @errors.add address, 'connection timeout'
       false
-    rescue # TODO: socket.error
+    rescue Errno::ECONNRESET, Errno::ECONNABORTED, Errno::ECONNREFUSED
+      address = "#{host}:#{port}"
       logger.debug "connection error", errno: e.errno, reason: e.strerror
       @errors.add address, 'connection error'
       false
-    end
-
-    def start
-      logger.info "starting peermanager"
-
-      logger.info "starting listener", addr: @listen_addr
-      @server.set_handle :on_new_connection
-      @server.start
-
-      bootstrap
-      super
-
-      after(0.000001) { discovery_loop }
-    end
-
-    def stop
-      logger.info "stopping peermanager"
-
-      @server.stop
-      @peers.each(&:stop)
-
-      super
     end
 
     def num_peers
@@ -144,16 +161,8 @@ module DEVp2p
 
     private
 
-    def start_peer(connection, address, remote_pubkey=nil)
-      peer = Peer.new self, connection, remote_pubkey
-      logger.debug "created new peer", peer: peer, fno: connection.fileno
-      @peers.push peer
-
-      peer.start
-      logger.debug "peer started", peer: peer, fno: connection.fileno
-      raise PeerError, 'connection closed' if connection.closed?
-
-      peer
+    def logger
+      @logger ||= Logger.new 'p2p.peermgr'
     end
 
     def bootstrap(bootstrap_nodes=[])
@@ -169,11 +178,32 @@ module DEVp2p
       end
     end
 
-    def on_new_connection(connection, address)
-      logger.debug "incoming connection", connection: connection
+    def handle_connection(socket)
+      _, port, host = socket.peeraddr
+      logger.debug "incoming connection", host: host, port: port
 
-      peer = start_peer connection, address
-      peer.join # TODO: needed? is peer on a new thread?
+      peer = start_peer socket
+      #peer.join # TODO: supervise?
+    rescue EOFError
+      logger.debug "connection disconnected", host: host, port: port
+      socket.close
+    end
+
+    # FIXME: TODO: timeout is ignored!
+    def create_connection(host, port, timeout)
+      Celluloid::IO::TCPSocket.new ::TCPSocket.new(host, port)
+    end
+
+    def start_peer(socket, remote_pubkey=nil)
+      peer = Peer.new self, socket, remote_pubkey
+      logger.debug "created new peer", peer: peer, fileno: socket.to_io.fileno
+      @peers.push peer
+
+      peer.start
+      logger.debug "peer started", peer: peer, fileno: socket.to_io.fileno
+      raise PeerError, 'connection closed' if socket.closed?
+
+      peer
     end
 
     def discovery_loop

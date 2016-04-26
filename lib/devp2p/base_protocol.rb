@@ -35,7 +35,7 @@ module DEVp2p
     attr :peer, :service
 
     def initialize(peer, service)
-      raise ArgumentError, 'service must be WiredService' unless service.instance_of?(WiredService)
+      raise ArgumentError, 'service must be WiredService' unless service.is_a?(WiredService)
       raise ArgumentError, 'peer.send_packet must be callable' unless peer.respond_to?(:send_packet)
 
       @peer = peer

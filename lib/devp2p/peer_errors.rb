@@ -5,7 +5,7 @@ module DEVp2p
   class PeerErrorsBase
 
     def add(address, error, client_version='')
-      raise NotImplemented
+      # do nothing
     end
 
   end

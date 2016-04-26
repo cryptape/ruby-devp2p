@@ -119,10 +119,10 @@ module DEVp2p
       def get_hello_packet(peer)
         res = {
           version: 55,
-          client_version_string: peer.config['client_version_string'],
+          client_version_string: peer.config[:client_version_string],
           capabilities: peer.capabilities,
-          listen_port: peer.config['p2p']['listen_port'],
-          remote_pubkey: peer.config['node']['id']
+          listen_port: peer.config[:p2p][:listen_port],
+          remote_pubkey: peer.config[:node][:id]
         }
 
         payload = Hello.encode_payload(res)

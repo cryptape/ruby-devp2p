@@ -7,11 +7,11 @@ module DEVp2p
 
     DUMB_REMOTE_TIMEOUT = 10.0
 
-    attr :safe_to_read
+    attr :config, :safe_to_read
 
-    def initialize(peermanager, connection, remote_pubkey=nil)
+    def initialize(peermanager, socket, remote_pubkey=nil)
       @peermanager = peermanager
-      @connection = connection
+      @socket = socket
       @config = peermanager.config
 
       @protocols = {}
@@ -19,14 +19,14 @@ module DEVp2p
       @stopped = false
       @hello_received = false
 
+      @remote_client_version = ''
       logger.debug "peer init", peer: self
 
-      privkey = Utils.decode_hex @config.node.privkey_hex
+      privkey = Utils.decode_hex @config[:node][:privkey_hex]
       hello_packet = P2PProtocol.get_hello_packet self
 
       @mux = MultiplexedSession.new privkey, hello_packet, remote_pubkey
       @remote_pubkey = remote_pubkey
-      @remote_client_version = ''
 
       connect_service @peermanager
 
@@ -52,18 +52,19 @@ module DEVp2p
     end
 
     def to_s
-      pn = (@connection.getpeername rescue 'not ready')
+      pn = ip_port.join(':')
       cv = @remote_client_version.split('/')[0,2].join('/')
       "<Peer #{pn} #{cv}>"
     end
 
     def report_error(reason)
-      port = ip_port || 'ip_port not available fixme'
-      @peermanager.errors.add port, reason, @remote_client_version
+      pn = ip_port.join(':') || 'ip:port not available'
+      @peermanager.errors.add pn, reason, @remote_client_version
     end
 
     def ip_port
-      @connection.getpeername
+      _, port, _, ip = @socket.peeraddr
+      return ip, port
     rescue
       logger.debug "ip_port failed: #{e}"
       raise e
@@ -163,7 +164,7 @@ module DEVp2p
 
       # FIXME: TODO: safe_to_read.clear
 
-      @connection.sendall data
+      @socket.write data
       logger.debug "wrote data", size: data.size, ts: Time.now
 
       safe_to_read.broadcast
@@ -173,13 +174,17 @@ module DEVp2p
       stop
     end
 
+    def start
+      @stopped = false
+    end
+
     def stop
       if !stopped?
         @stopped = true
         logger.debug "stopped", peer: self
 
         @protocols.each_value {|proto| proto.stop }
-        @peermanager.peers.delete self
+        @peermanager.delete self
         terminate
       end
     end
@@ -253,7 +258,7 @@ module DEVp2p
 
     def run_ingress_message
       logger.debug "peer starting main loop"
-      raise PeerError, 'connection is closed' if @connection.closed?
+      raise PeerError, 'connection is closed' if @socket.closed?
 
       decode_packet_future = future { run_decoded_packets }
       egress_message_future = future { run_egress_message }
