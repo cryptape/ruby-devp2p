@@ -7,6 +7,8 @@ module DEVp2p
     # Persist the list of known nodes with their reputation.
     #
     class Transport < BaseService
+      include Celluloid::IO
+
       name 'discovery'
 
       default_config(

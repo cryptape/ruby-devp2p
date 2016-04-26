@@ -11,7 +11,7 @@ module DEVp2p
   # responsible to stop them.
   #
   class BaseService
-    include Celluloid::IO
+    include Celluloid
     finalizer :stop
 
     extend Configurable
