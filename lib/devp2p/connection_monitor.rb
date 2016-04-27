@@ -36,9 +36,9 @@ module DEVp2p
     end
 
     def run
-      logger.debug 'started', monitor: self
+      logger.debug 'started', monitor: Actor.current
       loop do
-        logger.debug 'pinging', monitor: self
+        logger.debug 'pinging', monitor: Actor.current
         @proto.send_ping
 
         now = @last_request = Time.now
@@ -46,7 +46,7 @@ module DEVp2p
         logger.debug('latency', peer: @proto, latency: ("%.3f" % latency))
 
         if now - @last_response > @response_delay_threshold
-          logger.debug "unresponsive_peer", monitor: self
+          logger.debug "unresponsive_peer", monitor: Actor.current
           @proto.peer.report_error 'not responding to ping'
           @proto.stop
           terminate
@@ -59,7 +59,7 @@ module DEVp2p
     end
 
     def stop
-      logger.debug 'stopped', monitor: self
+      logger.debug 'stopped', monitor: Actor.current
       terminate
     end
 

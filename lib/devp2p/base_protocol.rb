@@ -46,17 +46,17 @@ module DEVp2p
     end
 
     def start
-      logger.debug 'starting', proto: self
+      logger.debug 'starting', proto: Actor.current
       @stopped = false
 
-      service.on_wire_protocol_start self
+      service.on_wire_protocol_start Actor.current
     end
 
     def stop
-      logger.debug 'stopping', proto: self
+      logger.debug 'stopping', proto: Actor.current
       @stopped = true
 
-      service.on_wire_protocol_stop self
+      service.on_wire_protocol_stop Actor.current
       terminate
     end
 
@@ -103,12 +103,12 @@ module DEVp2p
         # decode rlp, create hash, call receive
         receive = lambda do |packet|
           raise ArgumentError unless packet.is_a?(Packet)
-          instance.receive self, klass.decode_payload(packet.payload)
+          instance.receive Actor.current, klass.decode_payload(packet.payload)
         end
 
         # get data, rlp encode, return packet
         create = lambda do |*args|
-          res = instance.create(self, *args)
+          res = instance.create(Actor.current, *args)
           payload = klass.encode_payload res
           Packet.new protocol_id, klass.cmd_id, payload
         end

@@ -28,7 +28,7 @@ module DEVp2p
         logger.info "Discovery service init"
 
         @server = nil # will be UDPSocket
-        @protocol = Protocol.new app, self
+        @protocol = Protocol.new app, Actor.current
       end
 
       def address
