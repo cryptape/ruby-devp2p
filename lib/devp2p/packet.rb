@@ -7,9 +7,7 @@ module DEVp2p
   #
   class Packet
 
-    attr :protocol_id, :cmd_id, :prioritize
-
-    attr_accessor :payload, :total_payload_size
+    attr_accessor :protocol_id, :cmd_id, :prioritize, :payload, :total_payload_size
 
     def initialize(protocol_id, cmd_id, payload, prioritize=false)
       @protocol_id = protocol_id

@@ -21,6 +21,7 @@ module DEVp2p
   class KademliaRoutingError < StandardError; end
   class KademliaNodeNotFound < StandardError; end
   class PeerError < StandardError; end
+  class ProtocolError < StandardError; end
 
   class DefectiveMessage < StandardError; end
   class PacketExpired < DefectiveMessage; end

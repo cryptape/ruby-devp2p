@@ -82,7 +82,7 @@ module DEVp2p
 
     def add(peer)
       @peers.push peer
-      link peer
+      #link peer
     end
 
     def delete(peer)
@@ -149,8 +149,8 @@ module DEVp2p
       false
     rescue Errno::ECONNRESET, Errno::ECONNABORTED, Errno::ECONNREFUSED
       address = "#{host}:#{port}"
-      logger.debug "connection error", errno: e.errno, reason: e.strerror
-      @errors.add address, 'connection error'
+      logger.debug "connection error #{$!}"
+      @errors.add address, "connection error #{$!}"
       false
     end
 
@@ -162,6 +162,10 @@ module DEVp2p
       end
 
       active.size
+    end
+
+    def add_error(*args)
+      @errors.add *args
     end
 
     private
@@ -200,7 +204,7 @@ module DEVp2p
     end
 
     def start_peer(socket, remote_pubkey=nil)
-      peer = Peer.new self, socket, remote_pubkey
+      peer = Peer.new Actor.current, socket, remote_pubkey
       logger.debug "created new peer", peer: peer, fileno: socket.to_io.fileno
 
       add peer

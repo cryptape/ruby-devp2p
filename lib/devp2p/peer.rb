@@ -3,11 +3,11 @@
 module DEVp2p
 
   class Peer
-    include Celluloid
+    include Celluloid::IO
 
     DUMB_REMOTE_TIMEOUT = 10.0
 
-    attr :config, :safe_to_read
+    attr :config, :protocols, :safe_to_read
 
     def initialize(peermanager, socket, remote_pubkey=nil)
       @peermanager = peermanager
@@ -20,10 +20,10 @@ module DEVp2p
       @hello_received = false
 
       @remote_client_version = ''
-      logger.debug "peer init", peer: self
+      logger.debug "peer init", peer: Actor.current
 
       privkey = Utils.decode_hex @config[:node][:privkey_hex]
-      hello_packet = P2PProtocol.get_hello_packet self
+      hello_packet = P2PProtocol.get_hello_packet Actor.current
 
       @mux = MultiplexedSession.new privkey, hello_packet, remote_pubkey
       @remote_pubkey = remote_pubkey
@@ -31,8 +31,9 @@ module DEVp2p
       connect_service @peermanager
 
       # assure, we don't get messages while replies are not read
-      @safe_to_read = Celluloid::Condition.new
-      safe_to_read.broadcast
+      # TODO: is it safe to use flag + cond to mimic gevent.event.Event?
+      @safe_to_read = true
+      @safe_to_read_cond = Celluloid::Condition.new
 
       # stop peer if hello not received in DUMB_REMOTE_TIMEOUT
       after(DUMB_REMOTE_TIMEOUT) { check_if_dumb_remote }
@@ -59,7 +60,7 @@ module DEVp2p
 
     def report_error(reason)
       pn = ip_port.join(':') || 'ip:port not available'
-      @peermanager.errors.add pn, reason, @remote_client_version
+      @peermanager.add_error pn, reason, @remote_client_version
     end
 
     def ip_port
@@ -75,11 +76,11 @@ module DEVp2p
 
       # create protocol instance which connects peer with service
       protocol_class = service.wire_protocol
-      protocol = protocol_class.new self, service
+      protocol = protocol_class.new Actor.current, service
 
       # register protocol
       raise PeerError, 'protocol already connected' if @protocols.has_key?(protocol_class)
-      logger.debug "registering protocol", protocol: protocol.name, peer: self
+      logger.debug "registering protocol", protocol: protocol.name, peer: Actor.current
 
       @protocols[protocol_class] = protocol
       @mux.add_protocol protocol.protocol_id
@@ -91,7 +92,13 @@ module DEVp2p
       @protocols.has_key?(protocol)
     end
 
-    def receive_hello(proto, version, client_version_string, capabilities, listen_port, remote_pubkey)
+    def receive_hello(proto, data)
+      version = data[:version]
+      listen_port = data[:listen_port]
+      capabilities = data[:capabilities]
+      remote_pubkey = data[:remote_pubkey]
+      client_version_string = data[:client_version_string]
+
       logger.info 'received hello', version: version, client_version: client_version_string, capabilities: capabilities
 
       raise ArgumentError, "invalid remote pubkey" unless remote_pubkey.size == 64
@@ -122,7 +129,7 @@ module DEVp2p
         proto = service.wire_protocol
         if remote_services.has_key?(proto.name)
           if remote_services[proto.name] == proto.version
-            if service != @peermanager # p2p protocol already registered # FIXME: ???
+            if service != @peermanager # p2p protocol already registered
               connect_service service
             end
           else
@@ -140,7 +147,7 @@ module DEVp2p
     def send_packet(packet)
       protocol = @protocols.values.find {|pro| pro.protocol_id == packet.protocol_id }
       raise PeerError, "no protocol found" unless protocol
-      logger.debug "send packet", cmd: protocol.cmd_by_id[packet.cmd_id], protocol: protocol.name, peer: self
+      logger.debug "send packet", cmd: protocol.cmd_by_id[packet.cmd_id], protocol: protocol.name, peer: Actor.current
 
       # rewrite cmd_id (backwards compatibility)
       if @offset_based_dispatch
@@ -162,29 +169,64 @@ module DEVp2p
     def send_data(data)
       return if data.nil? || data.empty?
 
-      # FIXME: TODO: safe_to_read.clear
+      @safe_to_read = false
 
       @socket.write data
       logger.debug "wrote data", size: data.size, ts: Time.now
 
-      safe_to_read.broadcast
-    rescue # TODO: socket error and timeout error
+      @safe_to_read = true
+      @safe_to_read_cond.broadcast
+    rescue Errno::ETIMEDOUT
+      logger.debug "write timeout"
+      report_error "write timeout"
+      stop
+    rescue Errno::ECONNRESET, Errno::ECONNABORTED, Errno::ECONNREFUSED
       logger.debug "write error #{$!}"
       report_error "write error #{$!}"
       stop
     end
 
+    def run_ingress_message
+      logger.debug "peer starting main loop"
+      raise PeerError, 'connection is closed' if @socket.closed?
+
+      async.run_decoded_packets
+      async.run_egress_message
+
+      while !stopped?
+        @safe_to_read_cond.wait unless safe_to_read
+
+        imsg = @socket.recv(4096)
+        if !imsg.empty?
+          logger.debug "read data", size: imsg.size
+          begin
+            @mux.add_message imsg
+          rescue RLPxSessionError, DecryptionError => e
+            logger.debug "rlpx session error", peer: Actor.current, error: e
+            report_error "rlpx session error"
+            stop
+          rescue MultiplexerError => e
+            logger.debug "multiplexer error", peer: Actor.current, error: e
+            report_error "multiplexer error"
+            stop
+          end
+        end
+      end
+    end
+    alias run run_ingress_message
+
     def start
       @stopped = false
+      async.run
     end
 
     def stop
       if !stopped?
         @stopped = true
-        logger.debug "stopped", peer: self
+        logger.debug "stopped", peer: Actor.current
 
         @protocols.each_value {|proto| proto.stop }
-        @peermanager.delete self
+        @peermanager.delete Actor.current
         terminate
       end
     end
@@ -246,29 +288,13 @@ module DEVp2p
 
     def run_egress_message
       while !stopped?
-        send_data @mux.get_message
+        async.send_data @mux.get_message
       end
     end
 
     def run_decoded_packets
       while !stopped?
-        handle_packet @mux.get_packet # get_packet blocks
-      end
-    end
-
-    def run_ingress_message
-      logger.debug "peer starting main loop"
-      raise PeerError, 'connection is closed' if @socket.closed?
-
-      decode_packet_future = future { run_decoded_packets }
-      egress_message_future = future { run_egress_message }
-
-      while !stopped?
-        safe_to_read.wait
-
-        begin
-        rescue # TODO: socket error
-        end
+        async.handle_packet @mux.get_packet # get_packet blocks
       end
     end
 
