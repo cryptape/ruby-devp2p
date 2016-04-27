@@ -173,7 +173,7 @@ class DiscoveryAddressTest < Minitest::Test
     bob_app.start
     bob_discovery = bob_app.services.discovery
 
-    sleep 0.1
+    sleep 0.2
 
     bob_node = alice_discovery.protocol.get_node(bob_discovery.protocol.pubkey, bob_discovery.address)
     assert !ivget(alice_discovery.protocol, :@kademlia).routing.include?(bob_node)
@@ -181,7 +181,7 @@ class DiscoveryAddressTest < Minitest::Test
     ivget(alice_discovery.protocol, :@kademlia).ping bob_node
     assert !ivget(alice_discovery.protocol, :@kademlia).routing.include?(bob_node)
 
-    sleep 0.1
+    sleep 0.2
     assert ivget(alice_discovery.protocol, :@kademlia).routing.include?(bob_node)
 
     bob_app.stop
@@ -203,12 +203,12 @@ class DiscoveryAddressTest < Minitest::Test
       app
     end
 
-    sleep 0.1
+    sleep 0.2
 
     boot_node = get_app_node apps[0]
     assert boot_node.address
 
-    sleep_delay = 0.1 # we need to wait for the packets to be delivered
+    sleep_delay = 0.2 # we need to wait for the packets to be delivered
     apps[1..-1].each do |app|
       #puts "test bootstrap from=#{get_app_node(app)} to=#{boot_node}"
       get_app_kademlia(app).bootstrap [boot_node]
@@ -227,6 +227,7 @@ class DiscoveryAddressTest < Minitest::Test
       assert num >= num_apps - 1
     end
 
+    sleep 0.5
     apps.each(&:stop)
   end
 

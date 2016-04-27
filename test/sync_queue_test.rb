@@ -56,6 +56,7 @@ class SyncQueueTest < Minitest::Test
     assert !future.ready?
 
     a.enq 1
+    sleep 0.2
     assert future.ready?
     assert_equal 1, future.value
   end
