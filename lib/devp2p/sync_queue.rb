@@ -1,89 +1,71 @@
 # -*- encoding : ascii-8bit -*-
 
-require 'thread'
-
 ##
-# This is the synchronized queue implementation of ruby 2.0.0 with some
-# extentions like #peek.
+# A naive synchronized queue for Celluloid actors.
 #
 class SyncQueue
 
   def initialize
-    @que = []
-    @que.taint          # enable tainted communication
+    @queue = []
     @num_waiting = 0
-    self.taint
-    @mutex = Mutex.new
-    @cond = ConditionVariable.new
+    @cond = Celluloid::Condition.new
   end
 
   def enq(obj)
-    Thread.handle_interrupt(StandardError => :on_blocking) do
-      @mutex.synchronize do
-        @que.push obj
-        @cond.signal
-      end
-    end
+    @queue.push obj
+    @cond.signal
   end
   alias << enq
 
   def deq(non_block=false)
-    Thread.handle_interrupt(StandardError => :on_blocking) do
-      @mutex.synchronize do
-        while true
-          if @que.empty?
-            if non_block
-              raise ThreadError, "queue empty"
-            else
-              begin
-                @num_waiting += 1
-                @cond.wait @mutex
-              ensure
-                @num_waiting -= 1
-              end
-            end
-          else
-            return @que.shift
+    loop do
+      if @queue.empty?
+        if non_block
+          raise ThreadError, 'queue empty'
+        else
+          begin
+            @num_waiting += 1
+            @cond.wait
+          ensure
+            @num_waiting -= 1
           end
         end
+      else
+        return @queue.shift
       end
     end
   end
 
   # Same as pop except it will not remove the element from queue, just peek.
   def peek(non_block=false)
-    Thread.handle_interrupt(StandardError => :on_blocking) do
-      @mutex.synchronize do
-        while true
-          if @que.empty?
-            if non_block
-              raise ThreadError, "queue empty"
-            else
-              begin
-                @num_waiting += 1
-                @cond.wait @mutex
-              ensure
-                @num_waiting -= 1
-              end
-            end
-          else
-            return @que[0]
+    loop do
+      if @queue.empty?
+        if non_block
+          raise ThreadError, 'queue empty'
+        else
+          begin
+            @num_waiting += 1
+            @cond.wait
+          ensure
+            @num_waiting -= 1
           end
         end
+      else
+        return @queue[0]
       end
     end
   end
 
   def empty?
-    @que.empty?
+    @queue.empty?
   end
 
   def clear
-    @que.clear
+    @queue.clear
   end
 
   def length
-    @que.length
+    @queue.length
   end
   alias size length
 
