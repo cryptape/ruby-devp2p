@@ -24,4 +24,9 @@ class UtilsTest < Minitest::Test
     assert_equal r, Utils.update_config_with_defaults(c, d)
   end
 
+  def test_underscore
+    assert_equal 'camel', Utils.underscore('Camel')
+    assert_equal 'camel_case', Utils.underscore('CamelCase')
+  end
+
 end
