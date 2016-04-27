@@ -37,17 +37,17 @@ module DEVp2p
 
       def create(proto)
         { version: proto.class.version,
-          client_version_string: proto.config['client_version_string'],
+          client_version_string: proto.config[:client_version_string],
           capabilities: proto.peer.capabilities,
-          listen_port: proto.config['p2p']['listen_port'],
-          remote_pubkey: proto.config['node']['id'] }
+          listen_port: proto.config[:p2p][:listen_port],
+          remote_pubkey: proto.config[:node][:id] }
       end
 
       def receive(proto, data)
         logger.debug 'receive_hello', peer: proto.peer, version: data['version']
 
         reasons = proto.class::Disconnect::Reason
-        if data['remote_pubkey'] == proto.config['node']['id']
+        if data['remote_pubkey'] == proto.config[:node][:id]
           logger.debug 'connected myself'
           return proto.send_disconnect(reason: reasons[:connected_to_self])
         end
