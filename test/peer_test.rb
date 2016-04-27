@@ -5,15 +5,49 @@ class PeerTest < Minitest::Test
   include DEVp2p
 
   def test_handshake
-    Logging.logger.root.level = :debug
-
     Celluloid.shutdown rescue nil
     Celluloid.boot
 
     a_app, b_app = get_connected_apps
 
+    sleep 0.5
     a_app.stop
     b_app.stop
+  end
+
+  class ::DEVp2p::P2PProtocol
+    class Transfer < ::DEVp2p::Command
+      cmd_id 4
+      structure(raw_data: RLP::Sedes.binary)
+
+      def create(proto, raw_data='')
+        [raw_data]
+      end
+    end
+  end
+
+  def test_big_transfer
+    Celluloid.shutdown rescue nil
+    Celluloid.boot
+
+    a_app, b_app = get_connected_apps
+    sleep 0.1
+
+    a_protocol = ivget(a_app.services.peermanager, :@peers)[0].protocols[P2PProtocol]
+    b_protocol = ivget(b_app.services.peermanager, :@peers)[0].protocols[P2PProtocol]
+
+    t = Time.now
+    cb = ->(proto, **data) { puts "took #{Time.now - t}, data: #{data['raw_data']}" }
+
+    b_protocol.receive_transfer_callbacks.push cb
+    raw_data = '0' * 1000 * 1000
+    a_protocol.send_transfer raw_data
+
+    sleep 0.5
+    a_app.stop
+    sleep 0.5
+    b_app.stop
+    sleep 0.1
   end
 
   private

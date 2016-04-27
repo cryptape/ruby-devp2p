@@ -196,22 +196,28 @@ module DEVp2p
       while !stopped?
         @safe_to_read_cond.wait unless safe_to_read
 
-        imsg = @socket.recv(4096)
+        imsg = @socket.readpartial(4096)
         if !imsg.empty?
           logger.debug "read data", size: imsg.size
-          begin
-            @mux.add_message imsg
-          rescue RLPxSessionError, DecryptionError => e
-            logger.debug "rlpx session error", peer: Actor.current, error: e
-            report_error "rlpx session error"
-            stop
-          rescue MultiplexerError => e
-            logger.debug "multiplexer error", peer: Actor.current, error: e
-            report_error "multiplexer error"
-            stop
-          end
+          @mux.add_message imsg
         end
       end
+    rescue EOFError => e
+      if @socket.closed?
+        logger.debug "connection closed", peer: Actor.current, error: e
+      else
+        logger.error "connection aborted", peer: Actor.current, error: e
+        report_error "connection aborted"
+      end
+      stop
+    rescue RLPxSessionError, DecryptionError => e
+      logger.debug "rlpx session error", peer: Actor.current, error: e
+      report_error "rlpx session error"
+      stop
+    rescue MultiplexerError => e
+      logger.debug "multiplexer error", peer: Actor.current, error: e
+      report_error "multiplexer error"
+      stop
     end
     alias run run_ingress_message
 
