@@ -43,10 +43,6 @@ module DEVp2p
       services.each_value(&:stop)
     end
 
-    def join
-      services.each_value(&:join)
-    end
-
     private
 
     def logger
