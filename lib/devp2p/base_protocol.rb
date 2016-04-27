@@ -31,7 +31,7 @@ module DEVp2p
       max_cmd_id: 0 # reserved cmd space
     )
 
-    attr :peer, :service
+    attr :peer, :service, :cmd_by_id
 
     def initialize(peer, service)
       raise ArgumentError, 'service must be WiredService' unless service.is_a?(WiredService)
@@ -128,7 +128,7 @@ module DEVp2p
         end
       end
 
-      @cmd_by_id = klasses.map {|k| [k.cmd_id, k.name] }.to_h
+      @cmd_by_id = klasses.map {|k| [k.cmd_id, Utils.underscore(k.name)] }.to_h
     end
 
   end
