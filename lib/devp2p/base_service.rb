@@ -39,7 +39,7 @@ module DEVp2p
       @app = app
 
       @config = Utils.update_config_with_defaults app.config, default_config
-      @stopped = false
+      @stopped = true
 
       available_services = app.services.each_value.map(&:class)
       required_services.each do |r|

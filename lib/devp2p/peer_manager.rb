@@ -78,6 +78,10 @@ module DEVp2p
         break if stopped?
         async.handle_connection @server.accept
       end
+    rescue IOError
+      logger.error "listening error: #{$!}"
+      puts $!
+      @stopped = true
     end
 
     def add(peer)
@@ -207,6 +211,7 @@ module DEVp2p
       peer = Peer.new Actor.current, socket, remote_pubkey
       logger.debug "created new peer", peer: peer, fileno: socket.to_io.fileno
 
+      # TODO: link peer
       add peer
       peer.start
 

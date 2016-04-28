@@ -40,7 +40,7 @@ module DEVp2p
       @peer = peer
       @service = service
 
-      @stopped = false
+      @stopped = true
 
       setup
     end

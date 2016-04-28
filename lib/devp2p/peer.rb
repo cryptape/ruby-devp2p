@@ -16,7 +16,7 @@ module DEVp2p
 
       @protocols = {}
 
-      @stopped = false
+      @stopped = true
       @hello_received = false
 
       @remote_client_version = ''
