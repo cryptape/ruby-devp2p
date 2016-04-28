@@ -55,6 +55,11 @@ module DEVp2p
     def start
       logger.info "starting peermanager"
 
+      unless stopped?
+        logger.info "already started, skip"
+        return
+      end
+
       logger.info "starting listener", host: @host, port: @port
       @server = TCPServer.new @host, @port
 
