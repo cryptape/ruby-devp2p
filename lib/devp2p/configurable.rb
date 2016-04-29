@@ -10,9 +10,13 @@ module DEVp2p
         singleton_class.send(:define_method, name) do |*args|
           iv = "@#{name}"
           if args.empty?
-            instance_variable_defined?(iv) ?
-              instance_variable_get(iv) :
-              instance_variable_set(iv, default)
+            if instance_variable_defined?(iv)
+              instance_variable_get(iv)
+            else
+              v = superclass.respond_to?(:add_config) && superclass.respond_to?(name) ?
+                superclass.public_send(name) : default
+              instance_variable_set(iv, v)
+            end
           else
             instance_variable_set(iv, args.first)
           end

@@ -22,10 +22,15 @@ class ConfigurableTest < Minitest::Test
     parent false
   end
 
+  class Grandchild < Son
+
+  end
+
   def test_subclass_config
     assert_equal 'mother', Mom.name
     assert_equal 'son', Son.name
     assert_equal 'mother', Daughter.name
+    assert_equal 'son', Grandchild.name
 
     assert_equal :male, Son.gender
     assert_equal :female, Daughter.gender
