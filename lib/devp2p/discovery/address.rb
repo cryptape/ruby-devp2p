@@ -44,7 +44,7 @@ module DEVp2p
       end
 
       def update(addr)
-        @tcp_port ||= addr.tcp_port
+        @tcp_port = addr.tcp_port if @tcp_port == 0
       end
 
       ##

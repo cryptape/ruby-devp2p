@@ -26,7 +26,7 @@ module DEVp2p
         neighbours: 2
       }
 
-      attr :pubkey
+      attr :pubkey, :kademlia
 
       def initialize(app, transport)
         @app = app
