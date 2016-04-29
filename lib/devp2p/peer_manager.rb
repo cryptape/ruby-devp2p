@@ -235,7 +235,7 @@ module DEVp2p
 
         begin
           kademlia_proto = app.services.discovery.protocol.kademlia
-        rescue
+        rescue NoMethodError # some point hit nil
           logger.error "Discovery service not available."
           break
         end
@@ -245,7 +245,7 @@ module DEVp2p
 
           nodeid = Kademlia.random_nodeid
 
-          kademlia_proto.find_node node_id # TODO: should be a task? (future)
+          kademlia_proto.find_node nodeid
           sleep @discovery_delay
 
           neighbours = kademlia_proto.routing.neighbours(nodeid, 2)
@@ -261,7 +261,7 @@ module DEVp2p
           next if node.pubkey == local_pubkey
           next if @peers.any? {|p| p.remote_pubkey == node.pubkey }
 
-          connect [node.address.ip, node.address.tcp_port], node.pubkey
+          connect node.address.ip, node.address.tcp_port, node.pubkey
         end
 
         sleep @connect_loop_delay
