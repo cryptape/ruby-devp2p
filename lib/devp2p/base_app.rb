@@ -6,15 +6,18 @@ module DEVp2p
     include Celluloid
     trap_exit :service_died
 
-    DefaultConfig = {
-      client_version_string: "ruby-devp2p #{VersionString}",
-      deactivated_services: []
-    }
+    extend Configurable
+    add_config(
+      default_config: {
+        client_version_string: "ruby-devp2p #{VersionString}",
+        deactivated_services: []
+      }
+    )
 
     attr :config, :registry, :services
 
-    def initialize(config=DefaultConfig)
-      @config = Utils.update_config_with_defaults config, DefaultConfig
+    def initialize(config=default_config)
+      @config = Utils.update_config_with_defaults config, default_config
       @services = Hashie::Mash.new # active services
       @registry = {} # registered services
     end

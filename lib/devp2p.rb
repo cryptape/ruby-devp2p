@@ -46,4 +46,5 @@ require 'devp2p/peer_errors'
 require 'devp2p/peer_manager'
 
 require 'devp2p/base_app'
+require 'devp2p/app_helper'
 
