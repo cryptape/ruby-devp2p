@@ -294,13 +294,15 @@ module DEVp2p
 
     def run_egress_message
       while !stopped?
-        async.send_data @mux.get_message
+        # TODO: async.send_data?
+        send_data @mux.get_message
       end
     end
 
     def run_decoded_packets
       while !stopped?
-        async.handle_packet @mux.get_packet # get_packet blocks
+        # TODO: async.handle_packet?
+        handle_packet @mux.get_packet # get_packet blocks
       end
     end
 
