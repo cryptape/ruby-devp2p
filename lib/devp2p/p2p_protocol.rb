@@ -95,14 +95,13 @@ module DEVp2p
         key ? key.to_s : "unknown (id:#{id})"
       end
 
-      def create(proto, options={})
-        reason = options[:reason] || Reason[:client_quitting]
+      def create(proto, reason=Reason[:client_quitting])
         raise ArgumentError, "unknown reason" unless reason_key(reason)
         logger.debug "send_disconnect", peer: proto.peer, reason: reason_name(reason)
 
         proto.peer.report_error "sending disconnect #{reason_name(reason)}"
 
-        after(0.5) { proto.peer.stop }
+        Celluloid::Actor.current.after(0.5) { proto.peer.stop }
 
         {reason: reason}
       end
@@ -112,6 +111,13 @@ module DEVp2p
         proto.peer.report_error "disconnected #{reason_name[data['reason']]}"
         proto.peer.stop
       end
+
+      private
+
+      def logger
+        @logger = Logger.new 'p2p.protocol'
+      end
+
     end
 
     class <<self
