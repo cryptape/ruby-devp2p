@@ -189,9 +189,9 @@ module DEVp2p
         logger.info 'connecting bootstrap server', uri: uri
 
         begin
-          connect [ip, port], pubkey
-        rescue # TODO: socket.error
-          logger.warn "connecting bootstrap server failed"
+          connect ip, port, pubkey
+        rescue Errno::ECONNRESET, Errno::ECONNABORTED, Errno::ECONNREFUSED, Errno::ETIMEDOUT
+          logger.warn "connecting bootstrap server failed: #{$!}"
         end
       end
     end
