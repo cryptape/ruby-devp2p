@@ -14,7 +14,7 @@ module DEVp2p
         new(ip, udp_port, tcp_port, true)
       end
 
-      def initialize(ip, udp_port, tcp_port=0, from_binary=false)
+      def initialize(ip, udp_port, tcp_port=nil, from_binary=false)
         tcp_port ||= udp_port
 
         if from_binary
@@ -44,7 +44,7 @@ module DEVp2p
       end
 
       def update(addr)
-        @tcp_port = addr.tcp_port if @tcp_port == 0
+        @tcp_port = addr.tcp_port if @tcp_port.nil? || @tcp_port == 0
       end
 
       ##
