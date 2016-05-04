@@ -44,10 +44,10 @@ module DEVp2p
       end
 
       def receive(proto, data)
-        logger.debug 'receive_hello', peer: proto.peer, version: data['version']
+        logger.debug 'receive_hello', peer: proto.peer, version: data[:version]
 
         reasons = proto.class::Disconnect::Reason
-        if data['remote_pubkey'] == proto.config[:node][:id]
+        if data[:remote_pubkey] == proto.config[:node][:id]
           logger.debug 'connected myself'
           return proto.send_disconnect(reason: reasons[:connected_to_self])
         end
@@ -108,7 +108,7 @@ module DEVp2p
 
       def receive(proto, data)
         logger.debug "receive_disconnect", peer: proto.peer, reason: reason_name(data['reason'])
-        proto.peer.report_error "disconnected #{reason_name[data['reason']]}"
+        proto.peer.report_error "disconnected #{reason_name(data['reason'])}"
         proto.peer.stop
       end
 
