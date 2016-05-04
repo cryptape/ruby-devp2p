@@ -55,18 +55,11 @@ module DEVp2p
     def start
       logger.info "starting peermanager"
 
-      unless stopped?
-        logger.info "already started, skip"
-        return
-      end
-
       logger.info "starting listener", host: @host, port: @port
       @server = TCPServer.new @host, @port
 
       super
-      bootstrap
-
-      after(0.000001) { discovery_loop }
+      after(0.01) { discovery_loop }
     end
 
     def stop
@@ -78,7 +71,7 @@ module DEVp2p
       super
     end
 
-    def run
+    def _run
       loop do
         break if stopped?
         async.handle_connection @server.accept
@@ -101,7 +94,8 @@ module DEVp2p
     def on_hello_received(proto, version, client_version_string, capabilities, listen_port, remote_pubkey)
       logger.debug 'hello_received', peer: proto.peer, num_peers: @peers.size
 
-      if @peers.size > @config[:p2p][:max_peers]
+      extra_peers = @peers[0,@config[:p2p][:max_peers]]
+      if extra_peers.include?(proto.peer)
         logger.debug "too many peers", max: @config[:p2p][:max_peers]
         proto.send_disconnect proto.class::Disconnect::Reason[:too_many_peers]
         return false
@@ -201,7 +195,7 @@ module DEVp2p
       logger.debug "incoming connection", host: host, port: port
 
       peer = start_peer socket
-      #peer.join # TODO: supervise?
+      #Celluloid::Actor.join peer
     rescue EOFError
       logger.debug "connection disconnected", host: host, port: port
       socket.close
@@ -216,7 +210,6 @@ module DEVp2p
       peer = Peer.new Actor.current, socket, remote_pubkey
       logger.debug "created new peer", peer: peer, fileno: socket.to_io.fileno
 
-      # TODO: link peer
       add peer
       peer.start
 
