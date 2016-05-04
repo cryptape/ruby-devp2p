@@ -27,9 +27,7 @@ module DEVp2p
       # instance, probably based on `app.config` and `app.services`.
       #
       def register_with_app(app)
-        new(app).tap do |s|
-          app.register_service s
-        end
+        app.register_service self, app
       end
     end
 

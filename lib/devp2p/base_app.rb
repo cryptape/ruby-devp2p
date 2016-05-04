@@ -3,8 +3,6 @@ require 'hashie'
 
 module DEVp2p
   class BaseApp
-    include Celluloid
-    trap_exit :service_died
 
     extend Configurable
     add_config(
@@ -14,12 +12,12 @@ module DEVp2p
       }
     )
 
-    attr :config, :registry, :services
+    attr :config, :services
 
     def initialize(config=default_config)
       @config = Utils.update_config_with_defaults config, default_config
-      @services = Hashie::Mash.new # active services
-      @registry = {} # registered services
+      @registry = Celluloid::Supervision::Configuration.new
+      @services = Hashie::Mash.new
     end
 
     ##
@@ -27,37 +25,34 @@ module DEVp2p
     # `app.services.<protocol_name>` (e.g. `app.services.p2p` or
     # `app.services.eth`)
     #
-    def register_service(service)
-      raise ArgumentError, "service must be instance of BaseService" unless service.is_a?(BaseService)
-      raise ArgumentError, "service #{service.name} already registered" if services.has_key?(service.name)
+    def register_service(klass, *args)
+      raise ArgumentError, "service must be instance of BaseService" unless klass.instance_of?(Class) && klass < BaseService
+      raise ArgumentError, "service #{klass.name} already registered" if services.has_key?(klass.name)
 
-      logger.info "registering service", service: service.name
+      logger.info "registering service", service: klass.name
 
-      @registry[service.name] = service.class
-      services[service.name] = service
-      link service
-
-      service
+      @registry.define type: klass, as: klass.name, args: args
+      services[klass.name] = nil
     end
 
     def deregister_service(service)
-      raise ArgumentError, "service must be instance of BaseService" unless service.is_a?(BaseService)
-      @registry.delete(service.name)
-      services.delete(service.name)
-      unlink service
+      raies NotImplemented
+      #raise ArgumentError, "service must be instance of BaseService" unless service.is_a?(BaseService)
+      #services.delete(service.name)
+      #unlink service
     end
 
     def start
-      @registry.each do |name, klass|
-        klass.register_with_app(Actor.current) unless services.has_key?(name)
-      end
+      @registry.deploy
 
-      services.each_value(&:start)
+      services.keys.each do |k|
+        services[k] = Celluloid::Actor[k]
+        services[k].start
+      end
     end
 
     def stop
-      services.each_value(&:stop)
-      #terminate
+      @registry.shutdown
     end
 
     def join
@@ -70,11 +65,6 @@ module DEVp2p
 
     def logger
       @logger ||= Logger.new 'app'
-    end
-
-    def service_died(service, reason)
-      logger.info "service died", reason: reason
-      services.delete_if {|k, v| v == service }
     end
 
   end
