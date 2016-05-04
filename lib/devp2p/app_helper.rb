@@ -75,11 +75,10 @@ module DEVp2p
         end
       end
 
-      # TODO: wait for apps to finish
-      # apps.each(&:join)
+      apps.each(&:join)
 
       # finally stop
-      # apps.each(&:stop)
+      apps.each(&:stop)
     end
 
   end

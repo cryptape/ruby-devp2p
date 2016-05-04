@@ -60,6 +60,12 @@ module DEVp2p
       #terminate
     end
 
+    def join
+      @services.each_value do |service|
+        Celluloid::Actor.join service
+      end
+    end
+
     private
 
     def logger
