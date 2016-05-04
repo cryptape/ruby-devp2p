@@ -17,7 +17,7 @@ Gem::Specification.new do |s|
   s.files = Dir["{lib}/**/*"] + ["LICENSE", "README.md"]
 
   s.add_dependency('hashie', ['~> 3.4'])
-  s.add_dependency('block_logger', ['~> 0.1'])
+  s.add_dependency('block_logger', ['0.1.2'])
   s.add_dependency('celluloid', ['~> 0.17'])
   s.add_dependency('celluloid-io', ['~> 0.17.3'])
   s.add_dependency('digest-sha3', ['~> 1.1'])
