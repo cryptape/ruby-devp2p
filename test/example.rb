@@ -89,8 +89,11 @@ class ExampleService < DEVp2p::WiredService
     super
   end
 
-  def run
-    # do nothing
+  def _run
+    loop do
+      break if stopped?
+      sleep 1
+    end
   end
 
   def broadcast(obj, origin=nil)

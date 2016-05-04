@@ -12,12 +12,15 @@ class BaseServiceTest < Minitest::Test
       @counter = 0
     end
 
-    def run
+    private
+
+    def _run
       loop do
         @counter += 1
         sleep 0.01
       end
     end
+
   end
 
   def test_base_service

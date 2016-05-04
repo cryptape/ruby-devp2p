@@ -74,17 +74,6 @@ module DEVp2p
         )
       end
 
-      def run
-        logger.debug "run called"
-
-        maxlen = Multiplexer.max_window_size * 2
-        loop do
-          break if stopped?
-          message, info = @server.recvfrom maxlen
-          async.handle_packet message, info[3], info[1]
-        end
-      end
-
       def stop
         logger.info "stopping discovery"
         super
@@ -94,6 +83,15 @@ module DEVp2p
 
       def logger
         @logger ||= Logger.new 'p2p.discovery'
+      end
+
+      def _run
+        maxlen = Multiplexer.max_window_size * 2
+        loop do
+          break if stopped?
+          message, info = @server.recvfrom maxlen
+          async.handle_packet message, info[3], info[1]
+        end
       end
 
       def handle_packet(message, ip, port)

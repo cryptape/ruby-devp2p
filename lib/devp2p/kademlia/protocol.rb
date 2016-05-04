@@ -260,7 +260,7 @@ module DEVp2p
       private
 
       def logger
-        @logger ||= Logger.new 'p2p.discovery.kademlia'
+        @logger ||= Logger.new('p2p.discovery.kademlia').tap {|l| l.level = :info }
       end
 
       def query_neighbours(targetid)

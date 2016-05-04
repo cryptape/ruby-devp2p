@@ -5,6 +5,12 @@ require 'celluloid/io'
 
 require 'rlp'
 
+#Celluloid.exception_handler do |ex|
+#  puts "!!!!! Exception raised in celluloid actor:"
+#  puts ex
+#  puts ex.backtrace[0,20].join("\n")
+#end
+
 module DEVp2p
   Logger = BlockLogger
 
@@ -20,6 +26,7 @@ require 'devp2p/configurable'
 require 'devp2p/utils'
 require 'devp2p/exception'
 
+require 'devp2p/control'
 require 'devp2p/base_service'
 require 'devp2p/wired_service'
 

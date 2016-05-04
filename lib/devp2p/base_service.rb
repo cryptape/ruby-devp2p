@@ -13,6 +13,7 @@ module DEVp2p
   class BaseService
     include Celluloid
     #finalizer :stop
+    include Control
 
     extend Configurable
     add_config(
@@ -35,32 +36,14 @@ module DEVp2p
 
     def initialize(app)
       @app = app
-
       @config = Utils.update_config_with_defaults app.config, default_config
-      @stopped = true
+
+      initialize_control
 
       available_services = app.services.each_value.map(&:class)
       required_services.each do |r|
         raise MissingRequiredServiceError, "require service #{r}" unless available_services.include?(r)
       end
-    end
-
-    def run
-      raise NotImplemented, 'override to provide service loop'
-    end
-
-    def start
-      @stopped = false
-      async.run
-    end
-
-    def stop
-      @stopped = true
-      terminate
-    end
-
-    def stopped?
-      @stopped
     end
   end
 end

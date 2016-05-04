@@ -22,6 +22,7 @@ module DEVp2p
   #
   class BaseProtocol
     include Celluloid
+    include Control
 
     extend Configurable
     add_config(
@@ -40,27 +41,24 @@ module DEVp2p
       @peer = peer
       @service = service
 
-      @stopped = true
+      initialize_control
 
       setup
     end
 
     def start
       logger.debug 'starting', proto: Actor.current
-      @stopped = false
-
       service.on_wire_protocol_start Actor.current
+      super
     end
 
     def stop
       logger.debug 'stopping', proto: Actor.current
-      @stopped = true
-
       service.on_wire_protocol_stop Actor.current
-      terminate
+      super
     end
 
-    def run
+    def _run
       # pass
     end
 

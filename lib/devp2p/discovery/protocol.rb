@@ -317,7 +317,7 @@ module DEVp2p
       private
 
       def logger
-        @logger ||= Logger.new 'p2p.discovery'
+        @logger ||= Logger.new('p2p.discovery').tap {|l| l.level = :info }
       end
 
       def encode_cmd_id(cmd_id)
