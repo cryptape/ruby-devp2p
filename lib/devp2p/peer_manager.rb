@@ -93,10 +93,9 @@ module DEVp2p
     end
 
     def on_hello_received(proto, version, client_version_string, capabilities, listen_port, remote_pubkey)
-      logger.debug 'hello_received', peer: proto.peer, num_peers: @peers.size
+      logger.debug 'hello_received', listen_port: listen_port, peer: proto.peer, num_peers: @peers.size
 
-      extra_peers = @peers[0,@config[:p2p][:max_peers]]
-      if extra_peers.include?(proto.peer)
+      if @peers.size > @config[:p2p][:max_peers]
         logger.debug "too many peers", max: @config[:p2p][:max_peers]
         proto.send_disconnect proto.class::Disconnect::Reason[:too_many_peers]
         return false
