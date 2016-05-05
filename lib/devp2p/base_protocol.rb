@@ -95,18 +95,20 @@ module DEVp2p
 
       raise DuplicatedCommand unless klasses.map(&:cmd_id).uniq.size == klasses.size
 
+      proto = Actor.current
+
       klasses.each do |klass|
         instance = klass.new
 
         # decode rlp, create hash, call receive
         receive = lambda do |packet|
           raise ArgumentError unless packet.is_a?(Packet)
-          instance.receive Actor.current, klass.decode_payload(packet.payload)
+          instance.receive proto, klass.decode_payload(packet.payload)
         end
 
         # get data, rlp encode, return packet
         create = lambda do |*args|
-          res = instance.create(Actor.current, *args)
+          res = instance.create(proto, *args)
           payload = klass.encode_payload res
           Packet.new protocol_id, klass.cmd_id, payload
         end
