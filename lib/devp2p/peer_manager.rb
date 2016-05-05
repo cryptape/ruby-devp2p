@@ -31,8 +31,9 @@ module DEVp2p
     )
 
     def initialize(app)
-      logger.info "PeerManager init"
       super(app)
+
+      logger.info "PeerManager init"
 
       @peers = []
       @errors = @config[:log_disconnects] ? PeerErrors.new : PeerErrorsBase.new
@@ -55,7 +56,7 @@ module DEVp2p
     def start
       logger.info "starting peermanager"
 
-      logger.info "starting listener", host: @host, port: @port
+      logger.info "starting tcp listener", host: @host, port: @port
       @server = TCPServer.new @host, @port
 
       super
@@ -174,7 +175,7 @@ module DEVp2p
     private
 
     def logger
-      @logger ||= Logger.new 'p2p.peermgr'
+      @logger ||= Logger.new "#{@config[:p2p][:listen_port]}.p2p.peermgr"
     end
 
     def bootstrap(bootstrap_nodes=[])
@@ -248,7 +249,7 @@ module DEVp2p
           end
 
           node = neighbours.sample
-          logger.debug 'connecting random', node: node
+          logger.debug 'connecting random neighbour', node: node
 
           local_pubkey = Crypto.privtopub Utils.decode_hex(@config[:node][:privkey_hex])
           next if node.pubkey == local_pubkey

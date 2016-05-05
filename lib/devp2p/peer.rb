@@ -67,8 +67,8 @@ module DEVp2p
       _, port, _, ip = @socket.peeraddr
       return ip, port
     rescue
-      logger.debug "ip_port failed: #{e}"
-      raise e
+      logger.debug "ip_port failed: #{$!}"
+      raise $!
     end
 
     def connect_service(service)
@@ -244,7 +244,7 @@ module DEVp2p
     private
 
     def logger
-      @logger ||= Logger.new 'p2p.peer'
+      @logger ||= Logger.new "#{@config[:p2p][:listen_port]}.p2p.peer"
     end
 
     def handle_packet(packet)

@@ -62,7 +62,7 @@ module DEVp2p
         ip = @app.config[:discovery][:listen_host]
         port = @app.config[:discovery][:listen_port]
 
-        logger.info "starting listener", port: port, host: ip
+        logger.info "starting udp listener", port: port, host: ip
 
         @server = UDPSocket.new
         @server.bind ip, port
@@ -82,7 +82,7 @@ module DEVp2p
       private
 
       def logger
-        @logger ||= Logger.new 'p2p.discovery'
+        @logger ||= Logger.new "#{@app.config[:discovery][:listen_port]}.p2p.discovery"
       end
 
       def _run

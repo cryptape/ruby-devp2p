@@ -59,7 +59,7 @@ module DEVp2p
       private
 
       def logger
-        @logger = Logger.new 'p2p.protocol'
+        @logger = Logger.new "#{::Celluloid::Actor.current.peer.config[:p2p][:listen_port]}.p2p.protocol"
       end
 
     end
@@ -115,7 +115,7 @@ module DEVp2p
       private
 
       def logger
-        @logger = Logger.new 'p2p.protocol'
+        @logger = Logger.new "#{::Celluloid::Actor.current.peer.config[:p2p][:listen_port]}.p2p.protocol"
       end
 
     end
@@ -162,7 +162,7 @@ module DEVp2p
     private
 
     def logger
-      @logger = Logger.new 'p2p.protocol'
+      @logger = Logger.new "#{@config[:p2p][:listen_port]}.p2p.protocol"
     end
 
   end
