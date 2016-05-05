@@ -9,10 +9,11 @@ module DEVp2p
     include Celluloid
 
     def initialize(proto)
+      @proto = proto
+
       logger.debug "init"
       raise ArgumentError, 'protocol must be P2PProtocol' unless proto.is_a?(P2PProtocol)
 
-      @proto = proto
       @samples = []
       @last_response = @last_request = Time.now
 
@@ -26,7 +27,9 @@ module DEVp2p
         @samples.pop if @samples.size > @max_samples
       }
       @proto.receive_pong_callbacks.push(track_response)
-      @proto.receive_hello_callbacks.push(->(p, **kwargs) { start })
+
+      monitor = Actor.current
+      @proto.receive_hello_callbacks.push(->(p, **kwargs) { monitor.start })
     end
 
     def latency(num_samples=max_samples)
@@ -66,7 +69,7 @@ module DEVp2p
     private
 
     def logger
-      @logger ||= Logger.new('p2p.ctxmonitor')
+      @logger ||= Logger.new("#{@proto.peer.config[:p2p][:listen_port]}.p2p.ctxmonitor.#{object_id}")
     end
 
   end
