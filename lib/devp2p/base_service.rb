@@ -45,5 +45,11 @@ module DEVp2p
         raise MissingRequiredServiceError, "require service #{r}" unless available_services.include?(r)
       end
     end
+
+    def to_s
+      "<Service #{name}##{object_id}>"
+    end
+    alias inspect to_s
+
   end
 end
