@@ -31,7 +31,8 @@ module DEVp2p
 
       logger.info "registering service", service: klass.name
 
-      @registry.define type: klass, as: klass.name, args: args
+      registry_name = "#{object_id}__#{klass.name}"
+      @registry.define type: klass, as: registry_name, args: args
       services[klass.name] = nil
     end
 
@@ -46,7 +47,8 @@ module DEVp2p
       @registry.deploy
 
       services.keys.each do |k|
-        services[k] = Celluloid::Actor[k]
+        registry_name = "#{object_id}__#{k}"
+        services[k] = Celluloid::Actor[registry_name]
         services[k].start
       end
     end
