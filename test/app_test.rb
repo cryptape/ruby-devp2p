@@ -7,7 +7,10 @@ class AppTest < Minitest::Test
   include DEVp2p
 
   class ExampleServiceAppRestart < ExampleService
-    attr_accessor :testdriver
+
+    class <<self
+      attr_accessor :testdriver
+    end
 
     def initialize(app)
       super(app)
@@ -16,6 +19,7 @@ class AppTest < Minitest::Test
 
     def on_wire_protocol_start(proto)
       my_version = @config[:node_num]
+      testdriver = self.class.testdriver
 
       if my_version == 0
         if testdriver[:app_restarted]
@@ -31,7 +35,7 @@ class AppTest < Minitest::Test
     end
 
     def tick
-      if testdriver[:test_successful]
+      if self.class.testdriver[:test_successful]
         app.stop
         return
       end
@@ -50,7 +54,14 @@ class AppTest < Minitest::Test
     Celluloid.shutdown rescue nil
     Celluloid.boot
 
-    AppHelper.new.run ExampleApp, ExampleServiceAppRestart, num_nodes: 3, min_peers: 2, max_peers: 2
+    ExampleServiceAppRestart.testdriver = {
+      app_restarted: false,
+      test_successful: false
+    }
+
+    # TODO: make it work with max_peers=1
+    AppHelper.new.run ExampleApp, ExampleServiceAppRestart, num_nodes: 2, min_peers: 1, max_peers: 2
+    #sleep 40
   end
 
 end

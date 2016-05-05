@@ -10,7 +10,7 @@ module DEVp2p
       bootstrap_node_pubkey = Crypto.privtopub bootstrap_node_privkey
       enode = Utils.host_port_pubkey_to_uri "0.0.0.0", base_port, bootstrap_node_pubkey
 
-      services = [Discovery::Transport, PeerManager, service_class]
+      services = [Discovery::Transport, PeerManager]#, service_class]
 
       base_config = {}
       services.each {|s| Utils.update_config_with_defaults base_config, s.default_config }
@@ -39,7 +39,7 @@ module DEVp2p
       max_peers = config[:max_peers]
 
       raise "invalid node_num" unless node_num < num_nodes
-      raise "invalid min/max peers" unless min_peers <= max_peers && max_peers < num_nodes
+      #raise "invalid min/max peers" unless min_peers <= max_peers && max_peers < num_nodes
 
       config = Marshal.load Marshal.dump(config)
       config[:node_num] = node_num
