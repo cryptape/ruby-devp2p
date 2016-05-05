@@ -35,6 +35,8 @@ module DEVp2p
       @safe_to_read = true
       @safe_to_read_cond = Celluloid::Condition.new
 
+      _, @port, _, @ip = @socket.peeraddr
+
       # stop peer if hello not received in DUMB_REMOTE_TIMEOUT
       after(DUMB_REMOTE_TIMEOUT) { check_if_dumb_remote }
     end
@@ -53,22 +55,14 @@ module DEVp2p
     end
 
     def to_s
-      pn = ip_port.join(':')
+      pn = "#@ip:#@port"
       cv = @remote_client_version.split('/')[0,2].join('/')
       "<Peer #{pn} #{cv}>"
     end
 
     def report_error(reason)
-      pn = ip_port.join(':') || 'ip:port not available'
+      pn = "#@ip:#@port"
       @peermanager.add_error pn, reason, @remote_client_version
-    end
-
-    def ip_port
-      _, port, _, ip = @socket.peeraddr
-      return ip, port
-    rescue
-      logger.debug "ip_port failed: #{$!}"
-      raise $!
     end
 
     def connect_service(service)
@@ -172,7 +166,7 @@ module DEVp2p
       @safe_to_read = false
 
       @socket.write data
-      logger.debug "wrote data", size: data.size, ts: Time.now
+      logger.debug "wrote data", size: data.size
 
       @safe_to_read = true
       @safe_to_read_cond.broadcast
@@ -180,9 +174,9 @@ module DEVp2p
       logger.debug "write timeout"
       report_error "write timeout"
       stop
-    rescue Errno::ECONNRESET, Errno::ECONNABORTED, Errno::ECONNREFUSED
-      logger.debug "write error #{$!}"
-      report_error "write error #{$!}"
+    rescue SystemCallError => e
+      logger.debug "write error #{e}"
+      report_error "write error #{e}"
       stop
     end
 
@@ -196,20 +190,44 @@ module DEVp2p
       while !stopped?
         @safe_to_read_cond.wait unless safe_to_read
 
-        imsg = @socket.readpartial(4096)
+        begin
+          @socket.wait_readable
+        rescue SystemCallError => e
+          logger.debug "read error", error: e, peer: Actor.current
+          report_error "network error #{e}"
+          if Errno::EBADF === e # bad file descriptor
+            stop
+          else
+            raise e
+            break
+          end
+        end
+
+        begin
+          imsg = @socket.recv(4096)
+        rescue EOFError # imsg is empty
+          if @socket.closed?
+            logger.info "socket closed"
+            stop
+          else
+            imsg = ''
+          end
+        rescue SystemCallError => e
+          logger.debug "read error", error: e, peer: Actor.current
+          report_error "network error #{e}"
+          if [Errno::ECONNRESET, Errno::ETIMEDOUT, Errno::ENETDOWN, Errno::EHOSTUNREACH].any? {|syserr| e.instance_of?(syserr) }
+            stop
+          else
+            raise e
+            break
+          end
+        end
+
         if !imsg.empty?
           logger.debug "read data", size: imsg.size
           @mux.add_message imsg
         end
       end
-    rescue EOFError => e
-      if @socket.closed?
-        logger.debug "connection closed", peer: Actor.current, error: e
-      else
-        logger.error "connection aborted", peer: Actor.current, error: e
-        report_error "connection aborted"
-      end
-      stop
     rescue RLPxSessionError, DecryptionError => e
       logger.debug "rlpx session error", peer: Actor.current, error: e
       report_error "rlpx session error"
