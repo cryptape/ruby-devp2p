@@ -32,7 +32,7 @@ module DEVp2p
       @proto.receive_hello_callbacks.push(->(p, **kwargs) { monitor.start })
     end
 
-    def latency(num_samples=max_samples)
+    def latency(num_samples=@max_samples)
       num_samples = [num_samples, @samples.size].min
       return 1 unless num_samples > 0
       (0...num_samples).map {|i| @samples[i] }.reduce(0, &:+)
