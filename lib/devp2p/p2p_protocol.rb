@@ -107,8 +107,8 @@ module DEVp2p
       end
 
       def receive(proto, data)
-        logger.debug "receive_disconnect", peer: proto.peer, reason: reason_name(data['reason'])
-        proto.peer.report_error "disconnected #{reason_name(data['reason'])}"
+        logger.debug "receive_disconnect", peer: proto.peer, reason: reason_name(data[:reason])
+        proto.peer.report_error "disconnected #{reason_name(data[:reason])}"
         proto.peer.stop
       end
 
