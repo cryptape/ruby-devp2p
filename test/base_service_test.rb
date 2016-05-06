@@ -29,15 +29,18 @@ class BaseServiceTest < Minitest::Test
 
     app = BaseApp.new
 
-    s = TestService.register_with_app app
-    assert_equal '', s.name
+    klass = TestService.register_with_app app
+    assert_equal '', klass.name
 
     # register another service
     TestService.name 'other'
-    s2 = TestService.register_with_app app
+    klass2 = TestService.register_with_app app
 
     app.start
     sleep 0.1
+
+    s = app.services[klass.name]
+    s2 = app.services[klass2.name]
 
     assert s.counter > 0
     assert s2.counter > 0

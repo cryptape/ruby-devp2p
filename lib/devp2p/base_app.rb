@@ -34,6 +34,8 @@ module DEVp2p
       registry_name = "#{object_id}__#{klass.name}"
       @registry.define type: klass, as: registry_name, args: args
       services[klass.name] = nil
+
+      klass
     end
 
     def deregister_service(service)
@@ -54,6 +56,11 @@ module DEVp2p
     end
 
     def stop
+      services.keys.each do |k|
+        services[k].stop if services[k].alive?
+        services[k] = nil
+      end
+
       @registry.shutdown
     end
 
