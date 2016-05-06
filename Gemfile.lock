@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    devp2p (0.0.1)
+    devp2p (0.1.0)
       bitcoin-secp256k1 (= 0.3.1)
       block_logger (= 0.1.2)
       celluloid (~> 0.17)
