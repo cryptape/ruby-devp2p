@@ -6,6 +6,8 @@ require 'devp2p'
 
 default_config = <<-EOF
 discovery:
+    listen_host: 0.0.0.0
+    listen_port: 13333
     bootstrap_nodes:
         # local bootstrap
         # - enode://6ed2fecb28ff17dec8647f08aa4368b57790000e0e9b33a7b91f32c41b6ca9ba21600e9a8c44248ce63a71544388c6745fa291f88f8b81e109ba3da11f7b41b9@127.0.0.1:30303
@@ -24,13 +26,6 @@ p2p:
     num_peers: 10
     listen_host: 0.0.0.0
     listen_port: 13333
-
-discovery:
-    listen_host: 0.0.0.0
-    listen_port: 13333
-    bootstrap_nodes:
-        # my node
-        - enode://a255fad01ada3d61bbd07dba21fbb165eb073f8f7ae7ec6381ed6b9a382833278333335b5934f3282b28eb9d44e39c5244a2aec75c9b48ea0e4b57219cf36d85@127.0.0.1:30303
 
 node:
     privkey_hex: 65462b0520ef7d3df61b9992ed3bea0c56ead753be7c8b3614e0ce01e4cac41b
