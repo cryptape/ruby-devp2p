@@ -16,7 +16,7 @@ module DEVp2p
 
     def initialize(config=default_config)
       @config = Utils.update_config_with_defaults config, default_config
-      @registry = Celluloid::Supervision::Configuration.new
+      @container = Celluloid::Supervision::Container.new
       @services = Hashie::Mash.new
     end
 
@@ -30,38 +30,42 @@ module DEVp2p
       raise ArgumentError, "service #{klass.name} already registered" if services.has_key?(klass.name)
 
       logger.info "registering service", service: klass.name
-
-      registry_name = "#{object_id}__#{klass.name}"
-      @registry.define type: klass, as: registry_name, args: args
+      @container.add type: klass, as: get_actor_name(klass.name), args: args
       services[klass.name] = nil
 
       klass
     end
 
-    def deregister_service(service)
-      raies NotImplemented
-      #raise ArgumentError, "service must be instance of BaseService" unless service.is_a?(BaseService)
-      #services.delete(service.name)
-      #unlink service
+    ##
+    # Terminate service instance, remove it from registry.
+    #
+    def deregister_service(klass)
+      raise ArgumentError, "service must be instance of BaseService" unless klass.instance_of?(Class) && klass < BaseService
+      raise ArgumentError, "service #{klass.name} not registered" unless services.has_key?(klass.name)
+
+      logger.info "deregistering service", service: klass.name
+      @container.remove actor(klass.name)
+      services.delete klass.name
+
+      klass
     end
 
     def start
-      @registry.deploy
+      services.keys.each do |n|
+        next if services[n]
 
-      services.keys.each do |k|
-        registry_name = "#{object_id}__#{k}"
-        services[k] = Celluloid::Actor[registry_name]
-        services[k].start
+        services[n] = actor(n)
+        services[n].start
       end
     end
 
     def stop
-      services.keys.each do |k|
-        services[k].stop if services[k].alive?
-        services[k] = nil
+      services.keys.each do |n|
+        services[n].stop if services[n].alive?
+        services[n] = nil
       end
 
-      @registry.shutdown
+      #@container.shutdown
     end
 
     def join
@@ -74,6 +78,14 @@ module DEVp2p
 
     def logger
       @logger ||= Logger.new 'app'
+    end
+
+    def actor(name)
+      Celluloid::Actor[get_actor_name(name)]
+    end
+
+    def get_actor_name(service_name)
+      "#{object_id}_#{service_name}"
     end
 
   end
