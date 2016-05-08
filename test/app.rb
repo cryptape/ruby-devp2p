@@ -47,7 +47,7 @@ Logging.logger.root.level = :debug
 Celluloid.boot
 
 app = BaseApp.new config
-Discovery::Transport.register_with_app app
+Discovery::Service.register_with_app app
 PeerManager.register_with_app app
 
 puts "application config:"

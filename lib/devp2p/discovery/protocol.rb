@@ -28,15 +28,15 @@ module DEVp2p
 
       attr :pubkey, :kademlia
 
-      def initialize(app, transport)
+      def initialize(app, service)
         @app = app
-        @transport = transport
+        @service = service
 
         @privkey = Utils.decode_hex app.config[:node][:privkey_hex]
         @pubkey = Crypto.privtopub @privkey
 
         @nodes = {} # nodeid => Node
-        @node = Node.new(pubkey, @transport.address)
+        @node = Node.new(pubkey, @service.address)
 
         @kademlia = KademliaProtocolAdapter.new @node, self
 
@@ -177,7 +177,7 @@ module DEVp2p
       def send_message(node, message)
         raise ArgumentError, 'node must have address' unless node.address
         logger.debug ">>> message", address: node.address
-        @transport.send_message node.address, message
+        @service.send_message node.address, message
       end
 
       def send_ping(node)

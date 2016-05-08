@@ -1,7 +1,7 @@
 # -*- encoding : ascii-8bit -*-
 require 'test_helper'
 
-class DiscoveryAddressTest < Minitest::Test
+class DiscoveryServiceTest < Minitest::Test
   include DEVp2p::Discovery
 
   class AppMock < Struct.new(:config)
@@ -249,7 +249,7 @@ class DiscoveryAddressTest < Minitest::Test
     }
 
     DEVp2p::BaseApp.new(config).tap do |app|
-      Transport.register_with_app app
+      Service.register_with_app app
     end
   end
 
