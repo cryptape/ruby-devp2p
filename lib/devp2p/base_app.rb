@@ -31,7 +31,7 @@ module DEVp2p
 
       logger.info "registering service", service: klass.name
       @container.add type: klass, as: get_actor_name(klass.name), args: args
-      services[klass.name] = nil
+      services[klass.name] = actor(klass.name)
 
       klass
     end
@@ -51,18 +51,14 @@ module DEVp2p
     end
 
     def start
-      services.keys.each do |n|
-        next if services[n]
-
-        services[n] = actor(n)
-        services[n].start
+      services.each_value do |service|
+        service.start if service.stopped?
       end
     end
 
     def stop
-      services.keys.each do |n|
-        services[n].stop if services[n].alive?
-        services[n] = nil
+      services.each_value do |service|
+        service.stop if service.alive?
       end
 
       #@container.shutdown

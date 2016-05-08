@@ -35,6 +35,7 @@ class PeerTest < Minitest::Test
 
       sleep 0.1
       a_app.stop
+      # TODO: FIXME:
       assert_equal nil, a_app.services.peermanager
     end
 

@@ -2,7 +2,7 @@ module DEVp2p
   module Control
 
     def initialize_control
-      @stopped = false
+      @stopped = true
       @killed = false
     end
 
