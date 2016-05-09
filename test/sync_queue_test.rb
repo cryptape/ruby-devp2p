@@ -6,8 +6,10 @@ class SyncQueueTest < Minitest::Test
   class Actor
     include Celluloid
 
-    def initialize
-      @queue = SyncQueue.new
+    attr :queue
+
+    def initialize(max_size=nil)
+      @queue = SyncQueue.new max_size
     end
 
     def enq(x)
@@ -27,13 +29,40 @@ class SyncQueueTest < Minitest::Test
     def peek
       @queue.peek
     end
+  end
 
+  def setup
+    Celluloid.shutdown rescue nil
+    Celluloid.boot
+  end
+
+  def test_enq_deq_raw
+    a = Actor.new 2
+    a.queue.enq 1
+    a.queue.enq 2
+
+    future = a.future.enq 3
+    assert !future.ready?
+
+    a.deq
+    assert future.ready?
+
+    future = a.future.enq 4
+    assert !future.ready?
+
+    a.deq
+    a.deq
+    a.deq
+
+    future = a.future.deq
+    assert !future.ready?
+
+    a.enq 0
+    assert future.ready?
+    assert a.queue.empty?
   end
 
   def test_enq_deq
-    Celluloid.shutdown rescue nil
-    Celluloid.boot
-
     a = Actor.new
     future = a.future.add
     assert !future.ready?
@@ -48,9 +77,6 @@ class SyncQueueTest < Minitest::Test
   end
 
   def test_peek
-    Celluloid.shutdown rescue nil
-    Celluloid.boot
-
     a = Actor.new
     future = a.future.peek
     assert !future.ready?

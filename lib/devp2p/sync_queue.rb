@@ -5,33 +5,56 @@
 #
 class SyncQueue
 
-  def initialize
+  attr :queue, :max_size
+
+  def initialize(max_size=nil)
     @queue = []
     @num_waiting = 0
-    @cond = Celluloid::Condition.new
+
+    @max_size = max_size
+    @cond_full = Celluloid::Condition.new
+    @cond_empty = Celluloid::Condition.new
   end
 
-  def enq(obj)
-    @queue.push obj
-    @cond.signal
-  end
-  alias << enq
-
-  def deq(non_block=false)
+  def enq(obj, non_block=false)
     loop do
-      if @queue.empty?
+      if full?
         if non_block
-          raise ThreadError, 'queue empty'
+          raise ThreadError, 'queue full'
         else
           begin
             @num_waiting += 1
-            @cond.wait
+            @cond_full.wait
           ensure
             @num_waiting -= 1
           end
         end
       else
-        return @queue.shift
+        @queue.push obj
+        @cond_empty.signal
+        return obj
+      end
+    end
+  end
+  alias << enq
+
+  def deq(non_block=false)
+    loop do
+      if empty?
+        if non_block
+          raise ThreadError, 'queue empty'
+        else
+          begin
+            @num_waiting += 1
+            @cond_empty.wait
+          ensure
+            @num_waiting -= 1
+          end
+        end
+      else
+        obj = @queue.shift
+        @cond_full.signal
+        return obj
       end
     end
   end
@@ -39,13 +62,13 @@ class SyncQueue
   # Same as pop except it will not remove the element from queue, just peek.
   def peek(non_block=false)
     loop do
-      if @queue.empty?
+      if empty?
         if non_block
           raise ThreadError, 'queue empty'
         else
           begin
             @num_waiting += 1
-            @cond.wait
+            @cond_empty.wait
           ensure
             @num_waiting -= 1
           end
@@ -54,6 +77,10 @@ class SyncQueue
         return @queue[0]
       end
     end
+  end
+
+  def full?
+    @max_size && @queue.size >= @max_size
   end
 
   def empty?
