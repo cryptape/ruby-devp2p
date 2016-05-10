@@ -273,7 +273,7 @@ module DEVp2p
 
       packet.cmd_id = cmd_id # rewrite
       protocol.receive_packet packet
-    rescue UnknownCommandError
+    rescue UnknownCommandError => e
       logger.error 'received unknown cmd', error: e, packet: packet
     end
 
