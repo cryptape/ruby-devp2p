@@ -7,7 +7,7 @@ module DEVp2p
 
     DUMB_REMOTE_TIMEOUT = 10.0
 
-    attr :config, :protocols, :safe_to_read
+    attr :config, :protocols, :safe_to_read, :remote_client_version, :remote_pubkey
 
     def initialize(peermanager, socket, remote_pubkey=nil)
       @peermanager = peermanager
