@@ -284,8 +284,8 @@ module DEVp2p
         @protocols.each_value do |protocol|
           if packet.cmd_id < max_id + protocol.max_cmd_id + 1
             return protocol, packet.cmd_id - (max_id == 0 ? 0 : max_id + 1)
-            max_id += protocol.max_cmd_id
           end
+          max_id += protocol.max_cmd_id
         end
         raise UnknownCommandError, "no protocol for id #{packet.cmd_id}"
       end
