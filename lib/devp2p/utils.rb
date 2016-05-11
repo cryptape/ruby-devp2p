@@ -102,5 +102,9 @@ module DEVp2p
       word
     end
 
+    def class_to_cmd_name(klass)
+      klass.name.split(DOUBLE_COLON).last.downcase
+    end
+
   end
 end

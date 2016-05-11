@@ -119,7 +119,7 @@ module DEVp2p
           send_packet packet
         end
 
-        name = klass.name.split('::').last.downcase
+        name = Utils.class_to_cmd_name(klass)
         singleton_class.send(:define_method, "receive_#{name}", &receive)
         singleton_class.send(:define_method, "create_#{name}", &create)
         singleton_class.send(:define_method, "send_#{name}", &send_packet)
@@ -128,7 +128,7 @@ module DEVp2p
         end
       end
 
-      @cmd_by_id = klasses.map {|k| [k.cmd_id, Utils.underscore(k.name)] }.to_h
+      @cmd_by_id = klasses.map {|k| [k.cmd_id, Utils.class_to_cmd_name(k)] }.to_h
     end
 
   end
