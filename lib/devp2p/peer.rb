@@ -19,6 +19,7 @@ module DEVp2p
       @stopped = true
       @hello_received = false
 
+      _, @port, _, @ip = @socket.peeraddr
       @remote_client_version = ''
       logger.debug "peer init", peer: Actor.current
 
@@ -34,8 +35,6 @@ module DEVp2p
       # TODO: is it safe to use flag + cond to mimic gevent.event.Event?
       @safe_to_read = true
       @safe_to_read_cond = Celluloid::Condition.new
-
-      _, @port, _, @ip = @socket.peeraddr
 
       # stop peer if hello not received in DUMB_REMOTE_TIMEOUT
       after(DUMB_REMOTE_TIMEOUT) { check_if_dumb_remote }
