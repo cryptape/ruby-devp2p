@@ -46,7 +46,7 @@ module DEVp2p
       end
 
       @connect_timeout = 2.0
-      @connect_loop_delay = 0.1
+      @connect_loop_delay = 0.5
       @discovery_delay = 0.5
 
       @host = @config[:p2p][:listen_host]
@@ -248,12 +248,18 @@ module DEVp2p
           end
 
           node = neighbours.sample
-          logger.debug 'connecting random neighbour', node: node
 
           local_pubkey = Crypto.privtopub Utils.decode_hex(@config[:node][:privkey_hex])
-          next if node.pubkey == local_pubkey
-          next if @peers.any? {|p| p.remote_pubkey == node.pubkey }
+          if node.pubkey == local_pubkey
+            logger.debug 'connecting random neighbour', node: node, skipped: true, reason: 'myself'
+            next
+          end
+          if @peers.any? {|p| p.remote_pubkey == node.pubkey }
+            logger.debug 'connecting random neighbour', node: node, skipped: true, reason: 'already connected'
+            next
+          end
 
+          logger.debug 'connecting random neighbour', node: node, skipped: false
           connect node.address.ip, node.address.tcp_port, node.pubkey
         end
 
