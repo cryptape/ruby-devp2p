@@ -55,7 +55,10 @@ module DEVp2p
     def stop
       logger.debug 'stopping', proto: Actor.current
       service.on_wire_protocol_stop Actor.current
+
       super
+
+      terminate
     end
 
     def _run
