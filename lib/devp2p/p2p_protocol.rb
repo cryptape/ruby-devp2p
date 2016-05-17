@@ -122,16 +122,8 @@ module DEVp2p
 
     class <<self
       # special: we need this packet before the protocol can be initialized
-      def get_hello_packet(peer)
-        res = {
-          version: 55,
-          client_version_string: peer.config[:client_version_string],
-          capabilities: peer.capabilities,
-          listen_port: peer.config[:p2p][:listen_port],
-          remote_pubkey: peer.config[:node][:id]
-        }
-
-        payload = Hello.encode_payload(res)
+      def get_hello_packet(data)
+        payload = Hello.encode_payload(data.merge(version: 55))
         Packet.new protocol_id, Hello.cmd_id, payload
       end
     end

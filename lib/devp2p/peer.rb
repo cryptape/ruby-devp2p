@@ -24,7 +24,7 @@ module DEVp2p
       logger.debug "peer init", peer: Actor.current
 
       privkey = Utils.decode_hex @config[:node][:privkey_hex]
-      hello_packet = P2PProtocol.get_hello_packet Actor.current
+      hello_packet = P2PProtocol.get_hello_packet hello_data
 
       @mux = MultiplexedSession.new privkey, hello_packet, remote_pubkey
       @remote_pubkey = remote_pubkey
@@ -246,10 +246,11 @@ module DEVp2p
     def stop
       if !stopped?
         @stopped = true
-        logger.debug "stopped", peer: Actor.current
 
         @protocols.each_value {|proto| proto.stop }
         @peermanager.delete Actor.current
+
+        logger.info "peer stopped", peer: Actor.current
         terminate
       end
     end
@@ -262,6 +263,14 @@ module DEVp2p
 
     def logger
       @logger ||= Logger.new "#{@config[:p2p][:listen_port]}.p2p.peer"
+    end
+
+    def hello_data
+      { client_version_string: config[:client_version_string],
+        capabilities: capabilities,
+        listen_port: config[:p2p][:listen_port],
+        remote_pubkey: config[:node][:id]
+      }
     end
 
     def handle_packet(packet)
