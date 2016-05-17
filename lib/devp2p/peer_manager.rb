@@ -13,7 +13,7 @@ module DEVp2p
   #
   class PeerManager < WiredService
     include Celluloid::IO
-    finalizer :cleanup
+    finalizer :finalize
 
     name 'peermanager'
     required_services []
@@ -85,7 +85,6 @@ module DEVp2p
 
     def add(peer)
       @peers.push peer
-      #link peer
     end
 
     def delete(peer)
@@ -271,7 +270,7 @@ module DEVp2p
       cond.wait
     end
 
-    def cleanup
+    def finalize
       @server.close if @server && !@server.closed?
     end
 
