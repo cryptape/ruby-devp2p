@@ -113,7 +113,7 @@ module DEVp2p
     end
 
     def broadcast(protocol, command_name, args=[], kwargs={}, num_peers=nil, exclude_peers=[])
-      logger.debug "broadcasting", protocol: protocol, command: command_name, num_peers: num_peers, exclude_peers: exclude_peers
+      logger.debug "broadcasting", protocol: protocol, command: command_name, num_peers: num_peers, exclude_peers: exclude_peers.map(&:to_s)
       raise ArgumentError, 'invalid num_peers' unless num_peers.nil? || num_peers > 0
 
       peers_with_proto = @peers.select {|p| p.protocols.include?(protocol) && !exclude_peers.include?(p) }
