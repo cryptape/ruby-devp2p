@@ -20,7 +20,7 @@ module DEVp2p
 
         case structure
         when RLP::Sedes::CountableList
-          RLP.encode data, structure
+          RLP.encode data, sedes: structure
         when Hash
           raise ArgumentError, 'structure and data length mismatch' unless data.size == structure.size
           RLP.encode data, sedes: RLP::Sedes::List.new(elements: sedes)
