@@ -1,6 +1,6 @@
 # -*- encoding : ascii-8bit -*-
 module DEVp2p
-  VERSION = '0.1.1'
+  VERSION = '0.2.0'
 
   VersionString = begin
                     git_describe_re = /^(?<version>v\d+\.\d+\.\d+)-(?<git>\d+-g[a-fA-F0-9]+(?:-dirty)?)$/
