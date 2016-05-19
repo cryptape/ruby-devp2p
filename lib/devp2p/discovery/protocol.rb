@@ -172,6 +172,8 @@ module DEVp2p
 
         get_node(nodeid, address) unless @nodes.has_key?(nodeid)
         send cmd, nodeid, payload, mdc
+      rescue
+        logger.error 'invalid message', error: $!
       end
 
       def send_message(node, message)
