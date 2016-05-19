@@ -235,6 +235,10 @@ module DEVp2p
       logger.debug "multiplexer error", peer: Actor.current, error: e
       report_error "multiplexer error"
       stop
+    rescue
+      logger.debug "ingress message error", peer: Actor.current, error: $!
+      report_error "ingress message error"
+      stop
     end
     alias run run_ingress_message
 
