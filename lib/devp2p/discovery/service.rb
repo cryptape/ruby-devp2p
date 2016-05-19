@@ -69,9 +69,8 @@ module DEVp2p
 
         super
 
-        @protocol.bootstrap(
-          @app.config[:discovery][:bootstrap_nodes].map {|x| Node.from_uri(x) }
-        )
+        nodes = @app.config[:discovery][:bootstrap_nodes] || []
+        @protocol.bootstrap( nodes.map {|x| Node.from_uri(x) } )
       end
 
       def stop
