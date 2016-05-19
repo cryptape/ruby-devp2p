@@ -36,6 +36,7 @@ module DEVp2p
       logger.info "PeerManager init"
 
       @peers = []
+      @excluded = []
       @errors = @config[:log_disconnects] ? PeerErrors.new : PeerErrorsBase.new
 
       @wire_protocol = P2PProtocol
@@ -89,6 +90,11 @@ module DEVp2p
 
     def delete(peer)
       @peers.delete peer
+    end
+
+    def exclude(peer)
+      @excluded.push peer.remote_pubkey
+      peer.stop
     end
 
     def on_hello_received(proto, version, client_version_string, capabilities, listen_port, remote_pubkey)
@@ -253,8 +259,12 @@ module DEVp2p
             logger.debug 'connecting random neighbour', node: node, skipped: true, reason: 'myself'
             next
           end
-          if @peers.any? {|p| p.remote_pubkey == node.pubkey }
+          if @peers.any? {|p| node.pubkey == p.remote_pubkey }
             logger.debug 'connecting random neighbour', node: node, skipped: true, reason: 'already connected'
+            next
+          end
+          if @excluded.any? {|pubkey| node.pubkey == pubkey }
+            logger.debug 'connecting random neighbour', node: node, skipped: true, reason: 'excluded peer'
             next
           end
 
