@@ -179,7 +179,7 @@ module DEVp2p
       def send_message(node, message)
         raise ArgumentError, 'node must have address' unless node.address
         logger.debug ">>> message", address: node.address
-        @service.send_message node.address, message
+        @service.async.send_message node.address, message
       end
 
       def send_ping(node)
