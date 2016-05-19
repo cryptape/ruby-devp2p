@@ -7,7 +7,7 @@ module DEVp2p
 
     DUMB_REMOTE_TIMEOUT = 10.0
 
-    attr :config, :protocols, :safe_to_read, :remote_client_version, :remote_pubkey
+    attr :config, :protocols, :remote_client_version, :remote_pubkey
 
     def initialize(peermanager, socket, remote_pubkey=nil)
       @peermanager = peermanager
@@ -38,6 +38,10 @@ module DEVp2p
 
       # stop peer if hello not received in DUMB_REMOTE_TIMEOUT
       after(DUMB_REMOTE_TIMEOUT) { check_if_dumb_remote }
+    end
+
+    def wait_to_read
+      @safe_to_read_cond.wait unless @safe_to_read
     end
 
     ##
@@ -187,7 +191,7 @@ module DEVp2p
       async.run_egress_message
 
       while !stopped?
-        @safe_to_read_cond.wait unless safe_to_read
+        wait_to_read
 
         begin
           @socket.wait_readable

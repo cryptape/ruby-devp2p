@@ -134,7 +134,7 @@ module DEVp2p
         args.push kwargs
         peer.protocols[protocol].send "send_#{command_name}", *args
 
-        peer.safe_to_read.wait
+        peer.wait_to_read
         logger.debug "broadcasting done", ts: Time.now
       end
     end
