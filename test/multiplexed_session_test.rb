@@ -23,10 +23,7 @@ class MultiplexedSessionTest < Minitest::Test
   end
 
   def test_session
-    Celluloid.shutdown rescue nil
-    Celluloid.boot
-
-    proto = P2PProtocol.new PeerMock.new, WiredService.new(BaseApp.new)
+    proto = P2PProtocol.new PeerMock.new, WiredService.new(App.new)
     hello_packet = proto.create_hello
     p0 = 0
 

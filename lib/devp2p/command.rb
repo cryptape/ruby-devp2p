@@ -64,7 +64,7 @@ module DEVp2p
     # optionally implement create
     def create(proto, *args)
       options = args.last.is_a?(Hash) ? args.pop : {}
-      raise ArgumentError, "proto #{proto} must be protocol" unless proto.is_a?(BaseProtocol)
+      raise ArgumentError, "proto #{proto} must be protocol" unless proto.is_a?(Protocol)
       raise ArgumentError, "command structure mismatch" if !options.empty? && structure.instance_of?(RLP::Sedes::CountableList)
       options.empty? ? args : options
     end
