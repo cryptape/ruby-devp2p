@@ -2,15 +2,20 @@ module DEVp2p
   class App
     include Concurrent::Async
 
-    DEFAULT_CONFIG = {
-      client_version_string: "ruby-devp2p #{VersionString}",
-      deactivated_services: []
-    }
+    extend Configurable
+    add_config(
+      default_config: {
+        client_version_string: "ruby-devp2p #{VersionString}",
+        deactivated_services: []
+      }
+    )
 
     attr :config, :services
 
     def initialize(config=DEFAULT_CONFIG)
-      @config = Hashie::Mash.new DEFAULT_CONFIG.merge(config)
+      super()
+
+      @config = Hashie::Mash.new(default_config).merge(config)
       @services = Hashie::Mash.new
     end
 

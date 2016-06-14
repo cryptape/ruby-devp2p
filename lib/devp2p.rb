@@ -14,6 +14,9 @@ module DEVp2p
 end
 
 require 'devp2p/version'
+require 'devp2p/exception'
 require 'devp2p/crypto'
 require 'devp2p/utils'
+require 'devp2p/configurable'
+require 'devp2p/service'
 require 'devp2p/app'
