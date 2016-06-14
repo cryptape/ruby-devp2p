@@ -18,6 +18,7 @@ module DEVp2p
       super()
 
       @config = Hashie::Mash.new(default_config).merge(config)
+      @registry = {}
       @services = Hashie::Mash.new
     end
 
@@ -25,19 +26,22 @@ module DEVp2p
       raise ArgumentError, "service #{klass.name} already registered" if services.has_key?(klass.name)
 
       logger.info "registering service", service: klass.name
-      services[klass.name] = klass.new(*args)
+      @registry[klass.name] = [klass, args]
     end
 
     def deregister_service(klass)
       raise ArgumentError, "service #{klass.name} not registered" unless services.has_key?(klass.name)
 
       logger.info "deregistering service", service: klass.name
+      services[klass.name].async.stop
       services.delete klass.name
+      @registry.delete klass.name
     end
 
     def start
-      services.each_value do |service|
-        service.async.start
+      @registry.each do |name, (klass, args)|
+        services[name] = klass.new(*args)
+        services[name].async.start
       end
     rescue
       puts $!
@@ -45,8 +49,9 @@ module DEVp2p
     end
 
     def stop
-      services.each_value do |service|
-        service.async.stop
+      services.keys.each do |name|
+        services[name].async.stop
+        services.delete name
       end
     rescue
       puts $!

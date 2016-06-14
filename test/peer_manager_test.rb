@@ -5,9 +5,6 @@ class PeerTest < Minitest::Test
   include DEVp2p
 
   def test_app_restart
-    Celluloid.shutdown rescue nil
-    Celluloid.boot
-
     host, port = '127.0.0.1', 3020
 
     a_config = {
@@ -19,7 +16,7 @@ class PeerTest < Minitest::Test
         privkey_hex: Utils.encode_hex(Crypto.keccak256('a'))
       }
     }
-    a_app = BaseApp.new a_config
+    a_app = App.new a_config
     PeerManager.register_with_app(a_app)
 
     # Restart app 10-times: there should be no exception
@@ -35,7 +32,6 @@ class PeerTest < Minitest::Test
 
       sleep 0.1
       a_app.stop
-      # TODO: FIXME:
       assert_equal nil, a_app.services.peermanager
     end
 
@@ -47,9 +43,9 @@ class PeerTest < Minitest::Test
     #  try_tcp_connect host, port
     #end
 
-    #sleep 0.1
-    #a_app.stop
-    #assert_equal nil, a_app.services.peermanager
+    sleep 0.1
+    a_app.stop
+    assert_equal nil, a_app.services.peermanager
   end
 
   private
