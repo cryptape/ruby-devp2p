@@ -5,12 +5,9 @@ class PeerTest < Minitest::Test
   include DEVp2p
 
   def test_handshake
-    Celluloid.shutdown rescue nil
-    Celluloid.boot
-
     a_app, b_app = get_connected_apps
 
-    sleep 0.5
+    sleep 0.1
     a_app.stop
     b_app.stop
   end
@@ -27,9 +24,6 @@ class PeerTest < Minitest::Test
   end
 
   def test_big_transfer
-    Celluloid.shutdown rescue nil
-    Celluloid.boot
-
     a_app, b_app = get_connected_apps
     sleep 0.1
 
@@ -58,6 +52,7 @@ class PeerTest < Minitest::Test
 
     a_peermgr = a_app.services.peermanager
     b_peermgr = b_app.services.peermanager
+    sleep 0.1
 
     # connect
     b_config = get_config 'b'
@@ -65,16 +60,20 @@ class PeerTest < Minitest::Test
     port = b_config[:p2p][:listen_port]
     pubkey = Crypto.privtopub Utils.decode_hex(b_config[:node][:privkey_hex])
     a_peermgr.connect host, port, pubkey
+    sleep 0.1
 
     return a_app, b_app
   end
 
   def get_app(name)
     config = get_config name
-    app = BaseApp.new config
+    app = App.new config
     PeerManager.register_with_app app
     app.start
     app
+  rescue
+    puts $!
+    puts $!.backtrace[0,10].join("\n")
   end
 
   def get_config(name)

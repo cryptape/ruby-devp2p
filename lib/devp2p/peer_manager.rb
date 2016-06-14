@@ -34,6 +34,9 @@ module DEVp2p
         logger.error "listening error: #{$!}"
         puts $!
         @stopped = true
+      rescue
+        logger.error $!
+        logger.error $!.backtrace[0,10].join("\n")
       end
 
       def stop
@@ -127,7 +130,7 @@ module DEVp2p
 
     def exclude(peer)
       @excluded.push peer.remote_pubkey
-      peer.stop
+      peer.async.stop
     end
 
     def on_hello_received(proto, version, client_version_string, capabilities, listen_port, remote_pubkey)
@@ -167,7 +170,7 @@ module DEVp2p
         args.push kwargs
         peer.protocols[protocol].send "send_#{command_name}", *args
 
-        peer.wait_to_read
+        peer.safe_to_read.wait
         logger.debug "broadcasting done", ts: Time.now
       end
     end
@@ -209,6 +212,16 @@ module DEVp2p
       @errors.add *args
     end
 
+    def handle_connection(socket)
+      _, port, host = socket.peeraddr
+      logger.debug "incoming connection", host: host, port: port
+
+      start_peer socket
+    rescue EOFError
+      logger.debug "connection disconnected", host: host, port: port
+      socket.close
+    end
+
     private
 
     def logger
@@ -228,16 +241,6 @@ module DEVp2p
       end
     end
 
-    def handle_connection(socket)
-      _, port, host = socket.peeraddr
-      logger.debug "incoming connection", host: host, port: port
-
-      start_peer socket
-    rescue EOFError
-      logger.debug "connection disconnected", host: host, port: port
-      socket.close
-    end
-
     # FIXME: TODO: timeout is ignored!
     def create_connection(host, port, timeout)
       ::TCPSocket.new(host, port)
@@ -248,12 +251,15 @@ module DEVp2p
       logger.debug "created new peer", peer: peer, fileno: socket.to_io.fileno
 
       add peer
-      peer.start
+      peer.async.start
 
       logger.debug "peer started", peer: peer, fileno: socket.to_io.fileno
       raise PeerError, 'connection closed' if socket.closed?
 
       peer
+    rescue
+      puts $!
+      puts $!.backtrace[0,10].join("\n")
     end
 
     def discovery_loop
