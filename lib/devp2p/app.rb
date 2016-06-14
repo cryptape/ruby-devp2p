@@ -37,12 +37,18 @@ module DEVp2p
       services.each_value do |service|
         service.async.start
       end
+    rescue
+      puts $!
+      puts $!.backtrace[0,10].join("\n")
     end
 
     def stop
       services.each_value do |service|
         service.async.stop
       end
+    rescue
+      puts $!
+      puts $!.backtrace[0,10].join("\n")
     end
 
     private

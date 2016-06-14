@@ -12,6 +12,12 @@ module DEVp2p
       required_services: []
     )
 
+    class <<self
+      def register_with_app(app)
+        app.register_service self, app
+      end
+    end
+
     attr :app, :config
 
     def initialize(app)
