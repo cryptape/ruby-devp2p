@@ -48,14 +48,17 @@ module DEVp2p
       if !stopped?
         @stopped = true
 
-        @protocols.each_value {|proto| proto.stop }
-        @peermanager.delete self
+        @protocols.each_value {|proto| proto.async.stop }
+        @peermanager.async.delete self
 
         logger.info "peer stopped", peer: self
         @run.kill
         @run_decoded_packets.kill
         @run_egress_message.kill
       end
+    rescue
+      puts $!
+      puts $!.backtrace[0,10].join("\n")
     end
 
     def stopped?

@@ -97,8 +97,10 @@ module DEVp2p
       @service_listener = ServiceListener.new self, @server
       @service_listener.async.start
 
-      sleep 0.1
-      discovery_loop
+      @discovery_loop = Thread.new do
+        sleep 0.1
+        discovery_loop
+      end
     end
 
     def stop
@@ -106,6 +108,7 @@ module DEVp2p
 
       @server.close if @server
       @peers.each(&:stop)
+      @discovery_loop.kill
 
       @stopped = true
     end
