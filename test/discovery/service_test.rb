@@ -8,6 +8,8 @@ class DiscoveryServiceTest < Minitest::Test
   end
 
   class NodeDiscoveryMock
+    include Concurrent::Async
+
     # [[to_address, from_address, message], ...] shared between all instances
     @@messages = []
 
@@ -79,7 +81,8 @@ class DiscoveryServiceTest < Minitest::Test
     bob = NodeDiscoveryMock.new('127.0.0.1', 2, 'bob')
 
     bob_node = alice.protocol.get_node bob.protocol.pubkey, bob.address
-    ivget(alice.protocol, :@kademlia).ping  bob_node
+    ivget(alice.protocol, :@kademlia).ping bob_node
+    sleep 0.1
     assert_equal 1, NodeDiscoveryMock.messages.size
 
     msg = NodeDiscoveryMock.messages[0][2]
@@ -87,6 +90,7 @@ class DiscoveryServiceTest < Minitest::Test
     assert_equal alice.protocol.class::CMD_ID_MAP[:ping], cmd_id
 
     bob.poll
+    sleep 0.1
     assert_equal 1, NodeDiscoveryMock.messages.size
 
     alice.poll
@@ -162,9 +166,6 @@ class DiscoveryServiceTest < Minitest::Test
   ################### test with real UDP ###################
 
   def test_ping_pong_udp
-    Celluloid.shutdown rescue nil
-    Celluloid.boot
-
     alice_app = get_app 30000, 'alice'
     alice_app.start
     alice_discovery = alice_app.services.discovery
@@ -189,9 +190,6 @@ class DiscoveryServiceTest < Minitest::Test
   end
 
   def test_bootstrap_udp
-    Celluloid.shutdown rescue nil
-    Celluloid.boot
-
     # set timeout to something more tolerant
     DEVp2p::Kademlia.const_set :REQUEST_TIMEOUT, 10000.0
 
@@ -248,7 +246,7 @@ class DiscoveryServiceTest < Minitest::Test
       }
     }
 
-    DEVp2p::BaseApp.new(config).tap do |app|
+    DEVp2p::App.new(config).tap do |app|
       Service.register_with_app app
     end
   end
