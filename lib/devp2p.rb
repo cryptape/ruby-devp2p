@@ -1,15 +1,7 @@
 # -*- encoding : ascii-8bit -*-
 
 require 'block_logger'
-require 'celluloid/io'
-
 require 'rlp'
-
-#Celluloid.exception_handler do |ex|
-#  puts "!!!!! Exception raised in celluloid actor:"
-#  puts ex
-#  puts ex.backtrace[0,20].join("\n")
-#end
 
 module DEVp2p
   Logger = BlockLogger
@@ -21,37 +13,4 @@ module DEVp2p
 end
 
 require 'devp2p/version'
-
-require 'devp2p/configurable'
-require 'devp2p/utils'
-require 'devp2p/exception'
-
-require 'devp2p/control'
-require 'devp2p/base_service'
-require 'devp2p/wired_service'
-
-require 'devp2p/kademlia'
-require 'devp2p/discovery'
-
-require 'devp2p/sync_queue'
-
-require 'devp2p/packet'
-require 'devp2p/frame'
-require 'devp2p/multiplexer'
-
-require 'devp2p/crypto'
-require 'devp2p/rlpx_session'
-require 'devp2p/multiplexed_session'
-
-require 'devp2p/command'
-require 'devp2p/base_protocol'
-require 'devp2p/connection_monitor'
-require 'devp2p/p2p_protocol'
-
-require 'devp2p/peer'
-require 'devp2p/peer_errors'
-require 'devp2p/peer_manager'
-
-require 'devp2p/base_app'
-require 'devp2p/app_helper'
-
+require 'devp2p/app'

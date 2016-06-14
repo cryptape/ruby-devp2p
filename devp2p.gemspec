@@ -18,11 +18,10 @@ Gem::Specification.new do |s|
 
   s.add_dependency('hashie', ['~> 3.4'])
   s.add_dependency('block_logger', ['0.1.2'])
-  s.add_dependency('celluloid', ['~> 0.17'])
-  s.add_dependency('celluloid-io', ['~> 0.17.3'])
   s.add_dependency('digest-sha3', ['~> 1.1'])
   s.add_dependency('bitcoin-secp256k1', ['~>0.4'])
   s.add_dependency('rlp', ['>= 0.7.1'])
+  s.add_dependency('concurrent-ruby', ['~>1.0'])
 
   s.add_development_dependency('rake', ['~> 10.5'])
   s.add_development_dependency('minitest', '5.8.3')
