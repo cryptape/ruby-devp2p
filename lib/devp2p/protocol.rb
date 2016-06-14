@@ -47,7 +47,7 @@ module DEVp2p
 
     def start
       logger.debug 'starting', proto: self
-      service.await..on_wire_protocol_start self
+      service.await.on_wire_protocol_start self
     end
 
     def stop

@@ -11,6 +11,8 @@ module DEVp2p
 
         @service = service
         @socket = socket
+
+        @stopped = false
       end
 
       def start
@@ -51,6 +53,8 @@ module DEVp2p
 
         @service = service
         @socket = socket
+
+        @stopped = false
       end
 
       def start

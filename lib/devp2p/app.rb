@@ -23,7 +23,7 @@ module DEVp2p
       raise ArgumentError, "service #{klass.name} already registered" if services.has_key?(klass.name)
 
       logger.info "registering service", service: klass.name
-      services[klass.name] = klass.new *args
+      services[klass.name] = klass.new(*args)
     end
 
     def deregister_service(klass)
