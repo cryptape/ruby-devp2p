@@ -211,20 +211,11 @@ module DEVp2p
         @safe_to_read.wait
 
         begin
-          @socket.wait_readable
-        rescue SystemCallError => e
-          logger.debug "read error", error: e, peer: self
-          report_error "network error #{e}"
-          if Errno::EBADF === e # bad file descriptor
-            stop
-          else
-            raise e
-            break
-          end
-        end
-
-        begin
           imsg = @socket.recv(4096)
+          if imsg.empty?
+            logger.info "socket closed"
+            stop
+          end
         rescue EOFError # imsg is empty
           if @socket.closed?
             logger.info "socket closed"

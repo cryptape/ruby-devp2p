@@ -35,6 +35,7 @@ module DEVp2p
     def to_s
       "<Service #{name}##{object_id}>"
     end
+    alias inspect to_s
 
   end
 
