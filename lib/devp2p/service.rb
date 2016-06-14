@@ -32,6 +32,14 @@ module DEVp2p
       end
     end
 
+    def start
+      raise NotImplemented
+    end
+
+    def stop
+      raise NotImplemented
+    end
+
     def to_s
       "<Service #{name}##{object_id}>"
     end

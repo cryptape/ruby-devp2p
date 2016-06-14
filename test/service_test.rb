@@ -1,10 +1,10 @@
 # -*- encoding : ascii-8bit -*-
 require 'test_helper'
 
-class BaseServiceTest < Minitest::Test
+class ServiceTest < Minitest::Test
   include DEVp2p
 
-  class TestService < BaseService
+  class TestService < Service
     attr :counter
 
     def initialize(app)
@@ -12,22 +12,22 @@ class BaseServiceTest < Minitest::Test
       @counter = 0
     end
 
-    private
-
-    def _run
-      loop do
-        @counter += 1
-        sleep 0.01
+    def start
+      @run = Thread.new do
+        loop do
+          @counter += 1
+          sleep 0.01
+        end
       end
     end
 
+    def stop
+      @run.kill
+    end
   end
 
   def test_base_service
-    Celluloid.shutdown rescue nil
-    Celluloid.boot
-
-    app = BaseApp.new
+    app = App.new
 
     klass = TestService.register_with_app app
     assert_equal '', klass.name

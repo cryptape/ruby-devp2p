@@ -53,9 +53,6 @@ class AppTest < Minitest::Test
   def test_app_restart
     skip "make it work with ExampleServiceAppRestart"
 
-    Celluloid.shutdown rescue nil
-    Celluloid.boot
-
     ExampleServiceAppRestart.testdriver = {
       app_restarted: false,
       test_successful: false

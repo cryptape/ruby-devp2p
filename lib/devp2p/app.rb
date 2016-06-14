@@ -1,3 +1,5 @@
+require 'hashie'
+
 module DEVp2p
   class App
     include Concurrent::Async
@@ -12,7 +14,7 @@ module DEVp2p
 
     attr :config, :services
 
-    def initialize(config=DEFAULT_CONFIG)
+    def initialize(config=default_config)
       super()
 
       @config = Hashie::Mash.new(default_config).merge(config)
