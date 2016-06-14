@@ -4,7 +4,7 @@ require 'test_helper'
 class SyncQueueTest < Minitest::Test
 
   class Actor
-    include Celluloid
+    include Concurrent::Async
 
     attr :queue
 
@@ -31,60 +31,63 @@ class SyncQueueTest < Minitest::Test
     end
   end
 
-  def setup
-    Celluloid.shutdown rescue nil
-    Celluloid.boot
-  end
-
   def test_enq_deq_raw
     a = Actor.new 2
     a.queue.enq 1
     a.queue.enq 2
 
-    future = a.future.enq 3
-    assert !future.ready?
+    ivar = a.async.enq 3
+    sleep 0.1
+    assert ivar.pending?
 
-    a.deq
-    assert future.ready?
+    a.queue.deq
+    sleep 0.1
+    assert ivar.fulfilled?
 
-    future = a.future.enq 4
-    assert !future.ready?
+    ivar = a.async.enq 4
+    sleep 0.1
+    assert ivar.pending?
 
-    a.deq
-    a.deq
-    a.deq
+    a.queue.deq
+    a.queue.deq
+    a.queue.deq
 
-    future = a.future.deq
-    assert !future.ready?
+    ivar = a.async.deq
+    sleep 0.1
+    assert ivar.pending?
 
-    a.enq 0
-    assert future.ready?
+    a.queue.enq 0
+    sleep 0.1
+    assert ivar.fulfilled?
     assert a.queue.empty?
   end
 
   def test_enq_deq
     a = Actor.new
-    future = a.future.add
-    assert !future.ready?
-
-    a.enq 1
-    assert !future.ready?
-
-    a.enq 2
+    ivar = a.async.add
     sleep 0.1
-    assert future.ready?
-    assert_equal 3, future.value
+    assert ivar.pending?
+
+    a.queue.enq 1
+    sleep 0.1
+    assert ivar.pending?
+
+    a.queue.enq 2
+    sleep 0.1
+    assert ivar.fulfilled?
+    assert_equal 3, ivar.value
   end
 
   def test_peek
     a = Actor.new
-    future = a.future.peek
-    assert !future.ready?
+    ivar = a.async.peek
+    sleep 0.1
+    assert ivar.pending?
 
-    a.enq 1
-    sleep 0.2
-    assert future.ready?
-    assert_equal 1, future.value
+    a.queue.enq 1
+    sleep 0.1
+    assert ivar.fulfilled?
+    assert_equal 1, ivar.value
   end
 
 end
