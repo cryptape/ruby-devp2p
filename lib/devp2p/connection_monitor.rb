@@ -59,6 +59,9 @@ module DEVp2p
         now = @last_request = Time.now
       end
       @task.execute
+    rescue
+      puts $!
+      puts $!.backtrace[0,10].join("\n")
     end
 
     def stop

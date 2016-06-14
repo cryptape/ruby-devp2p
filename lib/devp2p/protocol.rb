@@ -48,6 +48,9 @@ module DEVp2p
     def start
       logger.debug 'starting', proto: self
       service.await.on_wire_protocol_start self
+    rescue
+      puts $!
+      puts $!.backtrace[0,10].join("\n")
     end
 
     def stop
@@ -55,6 +58,9 @@ module DEVp2p
       service.await.on_wire_protocol_stop self
 
       @stopped = true
+    rescue
+      puts $!
+      puts $!.backtrace[0,10].join("\n")
     end
 
     def receive_packet(packet)

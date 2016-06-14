@@ -36,7 +36,7 @@ module DEVp2p
       @safe_to_read.set
 
       # stop peer if hello not received in DUMB_REMOTE_TIMEOUT
-      after(DUMB_REMOTE_TIMEOUT) { check_if_dumb_remote }
+      Concurrent::ScheduledTask.execute(DUMB_REMOTE_TIMEOUT) { check_if_dumb_remote }
     end
 
     def start
@@ -100,7 +100,7 @@ module DEVp2p
       @protocols[protocol_class] = protocol
       @mux.add_protocol protocol.protocol_id
 
-      protocol.start
+      protocol.async.start
     end
 
     def has_protocol?(protocol)
