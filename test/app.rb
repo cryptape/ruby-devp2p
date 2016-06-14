@@ -44,17 +44,23 @@ end
 
 Logging.logger.root.level = :debug
 
-Celluloid.boot
-
-app = BaseApp.new config
+app = App.new config
 Discovery::Service.register_with_app app
 PeerManager.register_with_app app
 
 puts "application config:"
 p app.config.to_h
 
-app.start
-app.join
+evt_exit = Concurrent::Event.new
+do_exit = proc do
+  puts "exit."
+  exit 0
+end
 
-#app.stop
+Signal.trap("INT", &do_exit)
+Signal.trap("TERM", &do_exit)
+Signal.trap("QUIT", &do_exit)
 
+app.async.start
+
+Thread.new { evt_exit.wait }.join
