@@ -19,10 +19,7 @@ module DEVp2p
         loop do
           break if @stopped || @socket.closed?
 
-          puts "*"*100
-          p 'yes'
           message, info = @socket.recvfrom maxlen
-          p 'hooo!'
           handle_packet message, info[3], info[1]
         end
       rescue
@@ -37,6 +34,12 @@ module DEVp2p
       def handle_packet(message, ip, port)
         logger.debug "handling packet", ip: ip, port: port, size: message.size
         @service.async.receive_message Address.new(ip, port), message
+      end
+
+      private
+
+      def logger
+        @logger ||= Logger.new "p2p.discovery"
       end
     end
 
@@ -59,6 +62,15 @@ module DEVp2p
         logger.debug "sending", size: message.size, to: address
 
         @socket.send message, 0, address.ip, address.udp_port
+      rescue
+        puts $!
+        puts $!.backtrace[0,10].join("\n")
+      end
+
+      private
+
+      def logger
+        @logger ||= Logger.new "p2p.discovery"
       end
     end
 
@@ -138,7 +150,7 @@ module DEVp2p
       private
 
       def logger
-        @logger ||= Logger.new "#{@app.config[:discovery][:listen_port]}.p2p.discovery"
+        @logger ||= Logger.new "p2p.discovery"
       end
 
     end
