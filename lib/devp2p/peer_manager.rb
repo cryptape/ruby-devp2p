@@ -84,6 +84,8 @@ module DEVp2p
 
       @host = @config[:p2p][:listen_host]
       @port = @config[:p2p][:listen_port]
+
+      @stopped = false
     end
 
     def start
@@ -105,7 +107,11 @@ module DEVp2p
       @server.close if @server
       @peers.each(&:stop)
 
-      super
+      @stopped = true
+    end
+
+    def stopped?
+      @stopped
     end
 
     def add(peer)
@@ -297,6 +303,9 @@ module DEVp2p
 
         sleep @connect_loop_delay
       end
+    rescue
+      puts $!
+      puts $!.backtrace[0,10].join("\n")
     end
 
   end

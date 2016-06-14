@@ -16,7 +16,7 @@ module DEVp2p
 
       @protocols = {}
 
-      @stopped = true
+      @stopped = false
       @hello_received = false
 
       _, @port, _, @ip = @socket.peeraddr
@@ -37,6 +37,29 @@ module DEVp2p
 
       # stop peer if hello not received in DUMB_REMOTE_TIMEOUT
       after(DUMB_REMOTE_TIMEOUT) { check_if_dumb_remote }
+    end
+
+    def start
+      @stopped = false
+      @run = Thread.new { run }
+    end
+
+    def stop
+      if !stopped?
+        @stopped = true
+
+        @protocols.each_value {|proto| proto.stop }
+        @peermanager.delete self
+
+        logger.info "peer stopped", peer: self
+        @run.kill
+        @run_decoded_packets.kill
+        @run_egress_message.kill
+      end
+    end
+
+    def stopped?
+      @stopped
     end
 
     ##
@@ -177,12 +200,12 @@ module DEVp2p
       stop
     end
 
-    def run_ingress_message
+    def run
       logger.debug "peer starting main loop"
       raise PeerError, 'connection is closed' if @socket.closed?
 
-      async.run_decoded_packets
-      async.run_egress_message
+      @run_decoded_packets = Thread.new { run_decoded_packets }
+      @run_egress_message = Thread.new { run_egress_message }
 
       while !stopped?
         @safe_to_read.wait
@@ -238,33 +261,11 @@ module DEVp2p
       report_error "ingress message error"
       stop
     end
-    alias run run_ingress_message
-
-    def start
-      @stopped = false
-      async.run
-    end
-
-    def stop
-      if !stopped?
-        @stopped = true
-
-        @protocols.each_value {|proto| proto.stop }
-        @peermanager.delete self
-
-        logger.info "peer stopped", peer: self
-        terminate
-      end
-    end
-
-    def stopped?
-      @stopped
-    end
 
     private
 
     def logger
-      @logger ||= Logger.new "#{@config[:p2p][:listen_port]}.p2p.peer"
+      @logger ||= Logger.new "p2p.peer"
     end
 
     def hello_data

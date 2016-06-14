@@ -26,8 +26,10 @@ require 'devp2p/wired_service'
 
 require 'devp2p/sync_queue'
 require 'devp2p/frame'
+require 'devp2p/packet'
 require 'devp2p/multiplexer'
 require 'devp2p/multiplexed_session'
+require 'devp2p/rlpx_session'
 
 require 'devp2p/kademlia'
 require 'devp2p/discovery'
