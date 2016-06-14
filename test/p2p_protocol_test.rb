@@ -5,6 +5,8 @@ class P2PProtocolTest < Minitest::Test
   include DEVp2p
 
   class PeerMock
+    include Concurrent::Async
+
     attr :packets, :config, :capabilities, :stopped, :hello_received, :remote_client_version, :remote_pubkey, :remote_hello_version
 
     def initialize
@@ -54,11 +56,8 @@ class P2PProtocolTest < Minitest::Test
   end
 
   def setup
-    Celluloid.shutdown rescue nil
-    Celluloid.boot
-
     @peer = PeerMock.new
-    @proto = P2PProtocol.new @peer, WiredService.new(BaseApp.new)
+    @proto = P2PProtocol.new @peer, WiredService.new(App.new)
   end
 
   def test_eip8_hello
@@ -79,10 +78,13 @@ class P2PProtocolTest < Minitest::Test
     @proto.receive_pong_callbacks.push cb
 
     @proto.send_ping
+    sleep 0.1
     ping_packet = @peer.packets.pop
     @proto.receive_ping ping_packet
+    sleep 0.1
     pong_packet = @peer.packets.pop
     @proto.receive_pong pong_packet
+    sleep 0.1
     assert @peer.packets.empty?
     assert_equal 1, r.size
     assert_equal({}, r[0])

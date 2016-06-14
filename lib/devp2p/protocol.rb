@@ -103,7 +103,7 @@ module DEVp2p
 
         # decode rlp, create hash, call receive
         receive = lambda do |packet|
-          raise ArgumentError unless packet.is_a?(Packet)
+          raise ArgumentError, "packet is not a Packet: #{packet.inspect}" unless packet.is_a?(Packet)
           instance.receive proto, klass.decode_payload(packet.payload)
         end
 
