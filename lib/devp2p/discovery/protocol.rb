@@ -173,7 +173,7 @@ module DEVp2p
         get_node(nodeid, address) unless @nodes.has_key?(nodeid)
         send cmd, nodeid, payload, mdc
       rescue
-        logger.error 'invalid message', error: $!
+        logger.error 'invalid message', error: $!, from: address
       end
 
       def send_message(node, message)
@@ -319,7 +319,7 @@ module DEVp2p
       private
 
       def logger
-        @logger ||= Logger.new("#{udp_port}.p2p.discovery").tap {|l| l.level = :info }
+        @logger ||= Logger.new("p2p.discovery").tap {|l| l.level = :info }
       end
 
       def encode_cmd_id(cmd_id)

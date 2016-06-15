@@ -196,6 +196,11 @@ module DEVp2p
       logger.debug "connection error #{$!}"
       @errors.add address, "connection error #{$!}"
       false
+    rescue
+      address = "#{host}:#{port}"
+      logger.debug $!
+      @errors.add address, "connection error #{$!}"
+      false
     end
 
     def num_peers
