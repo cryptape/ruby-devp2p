@@ -27,6 +27,7 @@ module DEVp2p
 
       logger.info "registering service", service: klass.name
       @registry[klass.name] = [klass, args]
+      services[klass.name] = klass.new(*args)
     end
 
     def deregister_service(klass)
@@ -40,7 +41,7 @@ module DEVp2p
 
     def start
       @registry.each do |name, (klass, args)|
-        services[name] = klass.new(*args)
+        services[name] ||= klass.new(*args)
         services[name].async.start
       end
     rescue
