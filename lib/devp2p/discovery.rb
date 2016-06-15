@@ -1,3 +1,4 @@
+# -*- encoding : ascii-8bit -*-
 ##
 # # Node Discovery Protocol
 #

@@ -63,6 +63,10 @@ module DEVp2p
       puts $!.backtrace[0,10].join("\n")
     end
 
+    def stopped?
+      @stopped
+    end
+
     def receive_packet(packet)
       cmd_name = @cmd_by_id[packet.cmd_id]
       cmd = "receive_#{cmd_name}"

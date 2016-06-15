@@ -1,3 +1,4 @@
+# -*- encoding : ascii-8bit -*-
 require 'hashie'
 
 module DEVp2p
