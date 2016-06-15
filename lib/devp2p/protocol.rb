@@ -47,7 +47,7 @@ module DEVp2p
 
     def start
       logger.debug 'starting', proto: self
-      service.await.on_wire_protocol_start self
+      service.async.on_wire_protocol_start self
     rescue
       puts $!
       puts $!.backtrace[0,10].join("\n")
@@ -55,7 +55,7 @@ module DEVp2p
 
     def stop
       logger.debug 'stopping', proto: self
-      service.await.on_wire_protocol_stop self
+      service.async.on_wire_protocol_stop self
 
       @stopped = true
     rescue
