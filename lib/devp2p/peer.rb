@@ -81,8 +81,10 @@ module DEVp2p
     def to_s
       pn = "#@ip:#@port"
       cv = @remote_client_version.split('/')[0,2].join('/')
-      "<Peer #{pn} #{cv}>"
+      pn = "#{pn} #{cv}" unless cv.empty?
+      "<Peer #{pn}>"
     end
+    alias inspect to_s
 
     def report_error(reason)
       pn = "#@ip:#@port"
@@ -280,6 +282,9 @@ module DEVp2p
       protocol.receive_packet packet
     rescue UnknownCommandError => e
       logger.error 'received unknown cmd', error: e, packet: packet
+    rescue
+      logger.error $!
+      logger.error $!.backtrace[0,10].join("\n")
     end
 
     def protocol_cmd_id_from_packet(packet)
