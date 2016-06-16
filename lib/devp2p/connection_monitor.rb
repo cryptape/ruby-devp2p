@@ -29,7 +29,9 @@ module DEVp2p
       @proto.receive_pong_callbacks.push(track_response)
 
       monitor = self
-      @proto.receive_hello_callbacks.push(->(p, **kwargs) { monitor.start })
+      # FIXME: sleep 1 to make sure ConnectionMonitor start after connection of
+      # other protocols like ETHProtocol
+      @proto.receive_hello_callbacks.push(->(p, **kwargs) { sleep 1; monitor.start })
     end
 
     def latency(num_samples=@max_samples)
