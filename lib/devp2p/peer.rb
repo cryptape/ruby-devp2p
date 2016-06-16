@@ -105,7 +105,7 @@ module DEVp2p
       @protocols[protocol_class] = protocol
       @mux.add_protocol protocol.protocol_id
 
-      protocol.async.start
+      protocol.start
     end
 
     def has_protocol?(protocol)
