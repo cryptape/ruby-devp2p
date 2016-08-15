@@ -86,7 +86,7 @@ module DEVp2p
       end
 
       def midpoint
-        left + (right - left) / 2
+        (right + left) / 2
       end
 
       def distance(node)
